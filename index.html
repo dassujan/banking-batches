@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loop Timer</title>
-    <link rel="icon" href="favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap"
         rel="stylesheet">
     <style>
@@ -44,8 +43,7 @@
             content: '';
             position: fixed;
             inset: 0;
-            background-image:
-                linear-gradient(rgba(232, 255, 71, 0.03) 1px, transparent 1px),
+            background-image: linear-gradient(rgba(232, 255, 71, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(232, 255, 71, 0.03) 1px, transparent 1px);
             background-size: 48px 48px;
             pointer-events: none;
@@ -210,6 +208,8 @@
             text-align: center;
             transition: all 0.2s;
             line-height: 1.5;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .music-opt:hover {
@@ -241,7 +241,6 @@
             letter-spacing: 0.15em;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
-            /* Ensure tap registers on mobile */
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
@@ -288,7 +287,7 @@
             stroke: var(--accent);
             stroke-width: 6;
             stroke-linecap: butt;
-            transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
+            transition: stroke-dashoffset 0.9s linear, stroke 0.3s;
         }
 
         .ring-center {
@@ -353,12 +352,12 @@
         @keyframes ringPulse {
             0% {
                 opacity: 1;
-                transform: scale(0.9);
+                transform: scale(0.9)
             }
 
             100% {
                 opacity: 0;
-                transform: scale(1.25);
+                transform: scale(1.25)
             }
         }
 
@@ -449,11 +448,6 @@
             border-radius: 50%;
             background: var(--accent);
             cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: #d4eb35;
         }
 
         .vol-label {
@@ -542,7 +536,7 @@
             opacity: 0.45;
         }
 
-        @media (max-width: 430px) {
+        @media (max-width:430px) {
             :root {
                 --ring-size: 230px;
             }
@@ -562,14 +556,11 @@
 <body>
     <div class="flash" id="flash"></div>
     <div class="notify-msg" id="notifyMsg">⏰ TIME'S UP!</div>
-
     <div class="container">
         <div class="header">
             <h1>LOOP TIMER</h1>
             <p>Repeats until you close</p>
         </div>
-
-        <!-- Setup -->
         <div class="setup-panel" id="setupPanel">
             <div class="input-group">
                 <label>Set Timer Duration</label>
@@ -590,29 +581,21 @@
                     </div>
                 </div>
             </div>
-
             <div class="music-select-group">
                 <label>Alarm Music Style</label>
                 <div class="music-options">
-                    <button class="music-opt active" data-music="edm" onclick="selectMusic(this)">
-                        <span class="mi">⚡</span>EDM Pulse
-                    </button>
-                    <button class="music-opt" data-music="epic" onclick="selectMusic(this)">
-                        <span class="mi">🎺</span>Epic Fanfare
-                    </button>
-                    <button class="music-opt" data-music="siren" onclick="selectMusic(this)">
-                        <span class="mi">🚨</span>War Siren
-                    </button>
-                    <button class="music-opt" data-music="digital" onclick="selectMusic(this)">
-                        <span class="mi">🎮</span>Digital Boss
-                    </button>
+                    <button class="music-opt active" data-music="edm" onclick="selectMusic(this)"><span
+                            class="mi">⚡</span>EDM Pulse</button>
+                    <button class="music-opt" data-music="epic" onclick="selectMusic(this)"><span
+                            class="mi">🎺</span>Epic Fanfare</button>
+                    <button class="music-opt" data-music="siren" onclick="selectMusic(this)"><span
+                            class="mi">🚨</span>War Siren</button>
+                    <button class="music-opt" data-music="digital" onclick="selectMusic(this)"><span
+                            class="mi">🎮</span>Digital Boss</button>
                 </div>
             </div>
-
-            <button class="start-btn" onclick="startTimer()">START LOOP</button>
+            <button class="start-btn" id="startBtn">START LOOP</button>
         </div>
-
-        <!-- Timer -->
         <div class="timer-panel" id="timerPanel">
             <div class="ring-wrap">
                 <div class="notify-ring" id="notifyRing"></div>
@@ -626,58 +609,44 @@
                     <div class="music-badge" id="musicBadge">⚡ EDM Pulse</div>
                 </div>
             </div>
-
-            <div class="loop-count">Loop <span id="loopNum">1</span> &mdash; interval: <span id="intervalLabel">5m
-                    0s</span></div>
-
+            <div class="loop-count">Loop <span id="loopNum">1</span> &mdash; interval: <span id="intervalLabel">—</span>
+            </div>
             <div class="status-bar">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">running</span>
             </div>
-
             <div class="music-bar">
-                <button class="music-icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute">🔔</button>
+                <button class="music-icon-btn" id="muteBtn" onclick="toggleMute()">🔔</button>
                 <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)">
                 <span class="vol-label" id="volLabel">80%</span>
             </div>
-
             <div class="controls">
                 <button class="ctrl-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
                 <button class="ctrl-btn danger" onclick="resetTimer()">Reset</button>
             </div>
         </div>
     </div>
-
     <script>
-        // ── State ─────────────────────────────────────────────────────────
-        let totalSeconds = 0, remaining = 0, loopCount = 1;
-        let rafId = null, paused = false, selectedMusic = 'edm';
-        let lastTickTime = null; // for date-based ticking (works when screen locks)
-
-        const circumference = 2 * Math.PI * 128;
-        const ringProgress = document.getElementById('ringProgress');
-        ringProgress.style.strokeDasharray = circumference;
-        ringProgress.style.strokeDashoffset = 0;
-
-        const musicLabels = {
-            edm: '⚡ EDM Pulse', epic: '🎺 Epic Fanfare',
-            siren: '🚨 War Siren', digital: '🎮 Digital Boss'
-        };
+        var totalSeconds = 0, remaining = 0, loopCount = 1;
+        var timerId = null, notifying = false, paused = false, selectedMusic = 'edm';
+        var circumference = 2 * Math.PI * 128;
+        var ringEl = document.getElementById('ringProgress');
+        ringEl.style.strokeDasharray = circumference;
+        ringEl.style.strokeDashoffset = 0;
+        var musicLabels = { edm: '⚡ EDM Pulse', epic: '🎺 Epic Fanfare', siren: '🚨 War Siren', digital: '🎮 Digital Boss' };
 
         function selectMusic(btn) {
-            document.querySelectorAll('.music-opt').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.music-opt').forEach(function (b) { b.classList.remove('active'); });
             btn.classList.add('active');
             selectedMusic = btn.dataset.music;
         }
 
-        // ── Audio (created ONLY on user tap) ──────────────────────────────
-        let audioCtx = null, masterGain = null, alarmNodes = [];
-        let volumeLevel = 0.8, muted = false;
+        // Audio
+        var audioCtx = null, masterGain = null, alarmNodes = [];
+        var volumeLevel = 0.8, muted = false;
 
-        function initAudio() {
-            // Must be called directly from a user gesture (tap/click)
+        function unlockAudio() {
             if (audioCtx) {
-                // Resume if suspended (common on iOS after inactivity)
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 return;
             }
@@ -686,32 +655,247 @@
                 masterGain = audioCtx.createGain();
                 masterGain.gain.value = muted ? 0 : volumeLevel;
                 masterGain.connect(audioCtx.destination);
-
-                // iOS requires a silent buffer played during the user gesture to unlock audio
-                const silentBuf = audioCtx.createBuffer(1, 1, 22050);
-                const silentSrc = audioCtx.createBufferSource();
-                silentSrc.buffer = silentBuf;
-                silentSrc.connect(audioCtx.destination);
-                silentSrc.start(0);
-            } catch (e) {
-                console.warn('AudioContext init failed:', e);
-            }
+                // iOS unlock: play silent buffer in same synchronous call stack as user gesture
+                var buf = audioCtx.createBuffer(1, 1, 22050);
+                var src = audioCtx.createBufferSource();
+                src.buffer = buf;
+                src.connect(audioCtx.destination);
+                src.start(0);
+            } catch (e) { console.warn('Audio init:', e); }
         }
 
-        // ── Timer ─────────────────────────────────────────────────────────
+        function updateVolume(val) {
+            volumeLevel = val / 100;
+            document.getElementById('volLabel').textContent = val + '%';
+            if (masterGain && !muted) masterGain.gain.value = volumeLevel;
+        }
+        function toggleMute() {
+            muted = !muted;
+            document.getElementById('muteBtn').textContent = muted ? '🔕' : '🔔';
+            if (masterGain) masterGain.gain.value = muted ? 0 : volumeLevel;
+        }
+        function stopAlarm() {
+            alarmNodes.forEach(function (n) { try { n.stop(); } catch (e) { } });
+            alarmNodes = [];
+        }
+        function mkOsc(type, freq) {
+            var o = audioCtx.createOscillator();
+            o.type = type; o.frequency.value = freq; alarmNodes.push(o); return o;
+        }
+        function mkGain(val) {
+            var g = audioCtx.createGain(); g.gain.value = val; return g;
+        }
+        function mkNoise(dur) {
+            var buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+            var d = buf.getChannelData(0);
+            for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            var s = audioCtx.createBufferSource(); s.buffer = buf; alarmNodes.push(s); return s;
+        }
+
+        function playEdm(now) {
+            var dur = 4.0;
+            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(function (t) {
+                var o = mkOsc('sine', 180), g = mkGain(0);
+                o.connect(g); g.connect(masterGain);
+                o.frequency.exponentialRampToValueAtTime(35, now + t + 0.2);
+                g.gain.setValueAtTime(1.1, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.25);
+                o.start(now + t); o.stop(now + t + 0.28);
+            });
+            var sir = mkOsc('sawtooth', 660), sg = mkGain(0);
+            sir.connect(sg); sg.connect(masterGain);
+            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(function (t, i) { sir.frequency.setValueAtTime(i % 2 === 0 ? 660 : 990, now + t); });
+            sg.gain.setValueAtTime(0, now); sg.gain.linearRampToValueAtTime(0.3, now + 0.05);
+            sg.gain.setValueAtTime(0.3, now + 3.6); sg.gain.linearRampToValueAtTime(0, now + dur);
+            sir.start(now); sir.stop(now + dur);
+            [[0, 523, 659, 784], [0.25, 587, 740, 880], [0.75, 523, 659, 784], [1.25, 587, 740, 880],
+            [1.75, 523, 659, 784], [2.25, 659, 830, 988], [2.75, 523, 659, 784], [3.25, 698, 880, 1047]].forEach(function (row) {
+                var t = row[0];
+                for (var i = 1; i < row.length; i++) {
+                    var f = row[i], o = mkOsc('square', f), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                    flt.type = 'bandpass'; flt.frequency.value = f; flt.Q.value = 2;
+                    o.connect(flt); flt.connect(g); g.connect(masterGain);
+                    g.gain.setValueAtTime(0.16, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.22);
+                    o.start(now + t); o.stop(now + t + 0.25);
+                }
+            });
+            [0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.25].forEach(function (t) {
+                var n = mkNoise(0.14), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                flt.type = 'highpass'; flt.frequency.value = 1800;
+                n.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.55, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
+                n.start(now + t); n.stop(now + t + 0.16);
+            });
+            var big = mkOsc('sine', 440), bg = mkGain(0);
+            big.connect(bg); bg.connect(masterGain);
+            big.frequency.setValueAtTime(440, now + 3.4); big.frequency.linearRampToValueAtTime(1320, now + dur);
+            bg.gain.linearRampToValueAtTime(0.7, now + 3.6); bg.gain.exponentialRampToValueAtTime(0.001, now + dur);
+            big.start(now + 3.4); big.stop(now + dur + 0.05);
+        }
+
+        function playEpic(now) {
+            var dur = 4.5;
+            [0, 0.65, 1.3, 2.0, 2.65, 3.3, 3.9].forEach(function (t) {
+                var o = mkOsc('sine', 120), g = mkGain(0);
+                o.connect(g); g.connect(masterGain);
+                o.frequency.setValueAtTime(120, now + t); o.frequency.exponentialRampToValueAtTime(28, now + t + 0.45);
+                g.gain.setValueAtTime(1.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.55);
+                o.start(now + t); o.stop(now + t + 0.6);
+                var ns = mkNoise(0.08), flt = audioCtx.createBiquadFilter(), dg = mkGain(0);
+                flt.type = 'lowpass'; flt.frequency.value = 350;
+                ns.connect(flt); flt.connect(dg); dg.connect(masterGain);
+                dg.gain.setValueAtTime(0.9, now + t); dg.gain.exponentialRampToValueAtTime(0.001, now + t + 0.07);
+                ns.start(now + t); ns.stop(now + t + 0.1);
+            });
+            [[0, [165, 208, 247]], [0.65, [175, 220, 262]], [1.3, [196, 247, 294]], [2.0, [220, 277, 330]],
+            [2.65, [175, 220, 262]], [3.3, [220, 277, 330]], [3.9, [262, 330, 392]]].forEach(function (row) {
+                var t = row[0], freqs = row[1];
+                freqs.forEach(function (f) {
+                    var o = mkOsc('sawtooth', f), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                    flt.type = 'lowpass'; flt.frequency.value = 900; flt.Q.value = 3;
+                    o.connect(flt); flt.connect(g); g.connect(masterGain);
+                    g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.32, now + t + 0.04);
+                    g.gain.setValueAtTime(0.3, now + t + 0.3); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.6);
+                    o.start(now + t); o.stop(now + t + 0.65);
+                });
+            });
+            [0, 1.3, 2.65, 3.9].forEach(function (t) {
+                var n = mkNoise(0.7), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                flt.type = 'highpass'; flt.frequency.value = 5000;
+                n.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.7);
+                n.start(now + t); n.stop(now + t + 0.75);
+            });
+            var sw = mkOsc('triangle', 196), sg2 = mkGain(0);
+            sw.connect(sg2); sg2.connect(masterGain);
+            sw.frequency.linearRampToValueAtTime(523, now + dur);
+            sg2.gain.linearRampToValueAtTime(0.22, now + 0.5);
+            sg2.gain.setValueAtTime(0.22, now + dur - 0.4); sg2.gain.linearRampToValueAtTime(0, now + dur);
+            sw.start(now); sw.stop(now + dur);
+            var bm = mkOsc('sine', 50), bg2 = mkGain(0);
+            bm.connect(bg2); bg2.connect(masterGain);
+            bg2.gain.setValueAtTime(2.0, now + dur - 0.05); bg2.gain.exponentialRampToValueAtTime(0.001, now + dur + 0.5);
+            bm.start(now + dur - 0.05); bm.stop(now + dur + 0.55);
+        }
+
+        function playSiren(now) {
+            var dur = 4.0;
+            for (var i = 0; i < 8; i++) {
+                var t = i * 0.5, o = mkOsc('sawtooth', 440 + (i % 2) * 220);
+                var flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                flt.type = 'peaking'; flt.frequency.value = 800; flt.gain.value = 18;
+                o.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.42, now + t + 0.02);
+                g.gain.setValueAtTime(0.42, now + t + 0.22); g.gain.linearRampToValueAtTime(0, now + t + 0.48);
+                o.start(now + t); o.stop(now + t + 0.5);
+            }
+            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(function (t, i) {
+                var o = mkOsc('sine', i % 2 === 0 ? 52 : 69), g = mkGain(0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(1.4, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.42);
+                o.start(now + t); o.stop(now + t + 0.45);
+            });
+            for (var j = 0; j < 16; j++) {
+                var tt = j * 0.25, n = mkNoise(0.06), flt2 = audioCtx.createBiquadFilter(), g2 = mkGain(0);
+                flt2.type = 'highpass'; flt2.frequency.value = 8000;
+                n.connect(flt2); flt2.connect(g2); g2.connect(masterGain);
+                g2.gain.setValueAtTime(j % 4 === 0 ? 0.65 : 0.28, now + tt);
+                g2.gain.exponentialRampToValueAtTime(0.001, now + tt + 0.05);
+                n.start(now + tt); n.stop(now + tt + 0.07);
+            }
+            var mod = mkOsc('sine', 9), carrier = mkOsc('square', 330);
+            var mG = mkGain(160), cg = mkGain(0);
+            mod.connect(mG); mG.connect(carrier.frequency);
+            carrier.connect(cg); cg.connect(masterGain);
+            cg.gain.setValueAtTime(0, now); cg.gain.linearRampToValueAtTime(0.3, now + 0.1);
+            cg.gain.setValueAtTime(0.3, now + 3.6); cg.gain.linearRampToValueAtTime(0, now + dur);
+            mod.start(now); mod.stop(now + dur);
+            carrier.start(now); carrier.stop(now + dur);
+            var scr = mkOsc('sawtooth', 220), scrg = mkGain(0);
+            scr.connect(scrg); scrg.connect(masterGain);
+            scr.frequency.linearRampToValueAtTime(1760, now + dur);
+            scrg.gain.setValueAtTime(0.5, now + 3.5); scrg.gain.exponentialRampToValueAtTime(0.001, now + dur);
+            scr.start(now + 3.5); scr.stop(now + dur + 0.05);
+        }
+
+        function playDigital(now) {
+            var dur = 4.5;
+            [262, 330, 392, 494, 523, 659, 784, 988, 1047, 988, 784, 659, 523, 494, 392, 330].forEach(function (f, i) {
+                var t = i * 0.11, o = mkOsc('square', f), g = mkGain(0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.22, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.09);
+                o.start(now + t); o.stop(now + t + 0.11);
+            });
+            [[1.8, [147, 185, 220]], [2.15, [165, 208, 247]], [2.5, [185, 233, 277]], [2.85, [220, 277, 330]],
+            [3.2, [196, 247, 294]], [3.55, [220, 277, 330]]].forEach(function (row) {
+                var t = row[0], freqs = row[1];
+                freqs.forEach(function (f) {
+                    var o = mkOsc('square', f), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                    flt.type = 'lowpass'; flt.frequency.value = 2200;
+                    o.connect(flt); flt.connect(g); g.connect(masterGain);
+                    g.gain.setValueAtTime(0.38, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.32);
+                    o.start(now + t); o.stop(now + t + 0.35);
+                });
+            });
+            [0, 0.44, 0.88, 1.32, 1.76, 1.8, 2.15, 2.5, 2.85, 3.2, 3.55, 3.9].forEach(function (t) {
+                var o = mkOsc('sine', 155), g = mkGain(0);
+                o.connect(g); g.connect(masterGain);
+                o.frequency.exponentialRampToValueAtTime(28, now + t + 0.16);
+                g.gain.setValueAtTime(0.95, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.2);
+                o.start(now + t); o.stop(now + t + 0.22);
+            });
+            for (var i = 0; i < 20; i++) {
+                var t2 = i * 0.22, n = mkNoise(0.04), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                flt.type = 'bandpass'; flt.frequency.value = 4200; flt.Q.value = 0.7;
+                n.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.28, now + t2); g.gain.exponentialRampToValueAtTime(0.001, now + t2 + 0.04);
+                n.start(now + t2); n.stop(now + t2 + 0.05);
+            }
+            [1047, 988, 880, 784, 698, 659, 587, 523, 494, 440, 392, 330, 294, 262, 220, 196].forEach(function (f, i) {
+                var t = 1.8 + i * 0.14, o = mkOsc('square', f), g = mkGain(0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.2, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
+                o.start(now + t); o.stop(now + t + 0.14);
+            });
+            [131, 165, 196, 262].forEach(function (f) {
+                var o = mkOsc('square', f), g = mkGain(0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0, now + 4.1); g.gain.linearRampToValueAtTime(0.45, now + 4.16);
+                g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                o.start(now + 4.1); o.stop(now + dur + 0.05);
+            });
+        }
+
+        function playAlarm() {
+            if (!audioCtx || !masterGain) return;
+            stopAlarm();
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                var now = audioCtx.currentTime + 0.05;
+                if (selectedMusic === 'edm') playEdm(now);
+                else if (selectedMusic === 'epic') playEpic(now);
+                else if (selectedMusic === 'siren') playSiren(now);
+                else if (selectedMusic === 'digital') playDigital(now);
+            } catch (e) { console.warn('playAlarm:', e); }
+        }
+
+        // Timer
         function startTimer() {
-            // Init audio HERE — directly inside the tap handler
-            initAudio();
+            // MUST call unlockAudio synchronously here — inside the tap handler
+            unlockAudio();
 
-            const hrs = parseInt(document.getElementById('hoursInput').value) || 0;
-            const mins = parseInt(document.getElementById('minutesInput').value) || 0;
-            const secs = parseInt(document.getElementById('secondsInput').value) || 0;
+            var hrs = Math.max(0, parseInt(document.getElementById('hoursInput').value) || 0);
+            var mins = Math.max(0, parseInt(document.getElementById('minutesInput').value) || 0);
+            var secs = Math.max(0, parseInt(document.getElementById('secondsInput').value) || 0);
             totalSeconds = hrs * 3600 + mins * 60 + secs;
-            if (totalSeconds <= 0) { alert('Please enter a valid time!'); return; }
 
-            loopCount = 1; remaining = totalSeconds; paused = false;
+            if (totalSeconds <= 0) { alert('Please set a time greater than 0!'); return; }
 
-            let lbl = '';
+            loopCount = 1;
+            remaining = totalSeconds;
+            paused = false;
+            notifying = false;
+
+            var lbl = '';
             if (hrs) lbl += hrs + 'h ';
             if (mins) lbl += mins + 'm ';
             lbl += secs + 's';
@@ -720,339 +904,84 @@
             document.getElementById('setupPanel').classList.add('hidden');
             document.getElementById('timerPanel').classList.add('visible');
             updateDisplay();
-            lastTickTime = Date.now();
-            scheduleLoop();
+            startTicking();
         }
 
-        // Use date-based ticking so it's accurate even when phone sleeps briefly
-        function scheduleLoop() {
-            cancelAnimationFrame(rafId);
-            rafId = requestAnimationFrame(frameTick);
+        function startTicking() {
+            clearInterval(timerId);
+            timerId = setInterval(tick, 1000);
         }
 
-        let accumulatedMs = 0;
-        function frameTick() {
-            if (!paused) {
-                const now = Date.now();
-                accumulatedMs += now - lastTickTime;
-                lastTickTime = now;
-
-                const secondsToSubtract = Math.floor(accumulatedMs / 1000);
-                if (secondsToSubtract >= 1) {
-                    accumulatedMs -= secondsToSubtract * 1000;
-                    remaining -= secondsToSubtract;
-                    if (remaining <= 0) {
-                        remaining = 0;
-                        updateDisplay();
-                        triggerNotification();
-                        return; // stop loop until notification resets
-                    }
-                    updateDisplay();
-                }
-            } else {
-                lastTickTime = Date.now(); // reset so no time jump on resume
+        function tick() {
+            if (paused || notifying) return;
+            remaining--;
+            if (remaining <= 0) {
+                remaining = 0;
+                updateDisplay();
+                clearInterval(timerId);
+                timerId = null;
+                triggerNotification();
+                return;
             }
-            rafId = requestAnimationFrame(frameTick);
+            updateDisplay();
         }
 
         function updateDisplay() {
-            const r = Math.max(0, remaining);
-            const h = Math.floor(r / 3600);
-            const m = Math.floor((r % 3600) / 60);
-            const s = r % 60;
+            var r = Math.max(0, remaining);
+            var h = Math.floor(r / 3600);
+            var m = Math.floor((r % 3600) / 60);
+            var s = r % 60;
             document.getElementById('timeDisplay').textContent =
                 String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-
-            const progress = totalSeconds > 0 ? r / totalSeconds : 0;
-            ringProgress.style.strokeDashoffset = circumference * (1 - progress);
-
+            var progress = totalSeconds > 0 ? r / totalSeconds : 0;
+            ringEl.style.strokeDashoffset = circumference * (1 - progress);
             if (progress < 0.2) {
-                ringProgress.style.stroke = 'var(--accent2)';
+                ringEl.style.stroke = 'var(--accent2)';
                 document.getElementById('timeDisplay').style.color = 'var(--accent2)';
             } else if (progress < 0.5) {
-                ringProgress.style.stroke = 'var(--accent3)';
+                ringEl.style.stroke = 'var(--accent3)';
                 document.getElementById('timeDisplay').style.color = 'var(--text)';
             } else {
-                ringProgress.style.stroke = 'var(--accent)';
+                ringEl.style.stroke = 'var(--accent)';
                 document.getElementById('timeDisplay').style.color = 'var(--text)';
             }
             document.getElementById('loopNum').textContent = loopCount;
         }
 
         function triggerNotification() {
-            const flash = document.getElementById('flash');
+            notifying = true;
+            var flash = document.getElementById('flash');
             flash.classList.remove('pop'); void flash.offsetWidth; flash.classList.add('pop');
-
             document.body.classList.add('notifying');
-            setTimeout(() => document.body.classList.remove('notifying'), 2000);
-
-            const ring = document.getElementById('notifyRing');
+            setTimeout(function () { document.body.classList.remove('notifying'); }, 2000);
+            var ring = document.getElementById('notifyRing');
             ring.classList.remove('pulse'); void ring.offsetWidth; ring.classList.add('pulse');
-
-            const dot = document.getElementById('statusDot');
+            var dot = document.getElementById('statusDot');
             dot.classList.add('notify');
             document.getElementById('statusText').textContent = 'notifying!';
-
-            const msg = document.getElementById('notifyMsg');
+            var msg = document.getElementById('notifyMsg');
             msg.textContent = '⏰ LOOP ' + loopCount + ' DONE!';
             msg.classList.add('show');
-
-            if (typeof Notification !== 'undefined') {
-                if (Notification.permission === 'granted') {
-                    new Notification('⏰ Loop Timer', { body: `Loop ${loopCount} complete! Restarting…` });
-                } else if (Notification.permission !== 'denied') {
-                    Notification.requestPermission().then(p => {
-                        if (p === 'granted') new Notification('⏰ Loop Timer', { body: `Loop ${loopCount} complete!` });
-                    });
-                }
+            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                new Notification('⏰ Loop Timer', { body: 'Loop ' + loopCount + ' complete! Restarting…' });
             }
-
-            // Resume audio context if it was suspended (iOS background/lock)
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            playAlarm(selectedMusic);
-
-            setTimeout(() => {
+            playAlarm();
+            setTimeout(function () {
                 stopAlarm();
                 msg.classList.remove('show');
                 dot.classList.remove('notify');
                 document.getElementById('statusText').textContent = 'running';
                 loopCount++;
                 remaining = totalSeconds;
-                accumulatedMs = 0;
-                lastTickTime = Date.now();
+                notifying = false;
                 updateDisplay();
-                scheduleLoop();
+                startTicking();
             }, 4000);
         }
 
-        // ── Audio Helpers ─────────────────────────────────────────────────
-        function updateVolume(val) {
-            volumeLevel = val / 100;
-            document.getElementById('volLabel').textContent = val + '%';
-            if (masterGain && !muted) masterGain.gain.value = volumeLevel;
-        }
-
-        function toggleMute() {
-            muted = !muted;
-            document.getElementById('muteBtn').textContent = muted ? '🔕' : '🔔';
-            if (masterGain) masterGain.gain.value = muted ? 0 : volumeLevel;
-        }
-
-        function stopAlarm() {
-            alarmNodes.forEach(n => { try { n.stop(); } catch (e) { } });
-            alarmNodes = [];
-        }
-
-        function mkOsc(ctx, type, freq) {
-            const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
-            alarmNodes.push(o); return o;
-        }
-
-        function mkGain(ctx, val) {
-            const g = ctx.createGain(); g.gain.value = val; return g;
-        }
-
-        function mkNoise(ctx, dur) {
-            const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
-            const d = buf.getChannelData(0);
-            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-            const s = ctx.createBufferSource(); s.buffer = buf;
-            alarmNodes.push(s); return s;
-        }
-
-        // ── 1. EDM Pulse ──
-        function playEdm(ctx, now) {
-            const dur = 4.0;
-            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(t => {
-                const o = mkOsc(ctx, 'sine', 180), g = mkGain(ctx, 0);
-                o.connect(g); g.connect(masterGain);
-                o.frequency.exponentialRampToValueAtTime(35, now + t + 0.2);
-                g.gain.setValueAtTime(1.1, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.25);
-                o.start(now + t); o.stop(now + t + 0.28);
-            });
-            const sir = mkOsc(ctx, 'sawtooth', 660), sg = mkGain(ctx, 0);
-            sir.connect(sg); sg.connect(masterGain);
-            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach((t, i) => sir.frequency.setValueAtTime(i % 2 === 0 ? 660 : 990, now + t));
-            sg.gain.setValueAtTime(0, now); sg.gain.linearRampToValueAtTime(0.3, now + 0.05);
-            sg.gain.setValueAtTime(0.3, now + 3.6); sg.gain.linearRampToValueAtTime(0, now + dur);
-            sir.start(now); sir.stop(now + dur);
-            [[0, 523, 659, 784], [0.25, 587, 740, 880], [0.75, 523, 659, 784], [1.25, 587, 740, 880],
-            [1.75, 523, 659, 784], [2.25, 659, 830, 988], [2.75, 523, 659, 784], [3.25, 698, 880, 1047]].forEach(([t, ...fr]) => {
-                fr.forEach(f => {
-                    const o = mkOsc(ctx, 'square', f), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                    flt.type = 'bandpass'; flt.frequency.value = f; flt.Q.value = 2;
-                    o.connect(flt); flt.connect(g); g.connect(masterGain);
-                    g.gain.setValueAtTime(0.16, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.22);
-                    o.start(now + t); o.stop(now + t + 0.25);
-                });
-            });
-            [0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.25].forEach(t => {
-                const n = mkNoise(ctx, 0.14), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                flt.type = 'highpass'; flt.frequency.value = 1800;
-                n.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.55, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
-                n.start(now + t); n.stop(now + t + 0.16);
-            });
-            const big = mkOsc(ctx, 'sine', 440), bg = mkGain(ctx, 0);
-            big.connect(bg); bg.connect(masterGain);
-            big.frequency.setValueAtTime(440, now + 3.4); big.frequency.linearRampToValueAtTime(1320, now + dur);
-            bg.gain.linearRampToValueAtTime(0.7, now + 3.6); bg.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            big.start(now + 3.4); big.stop(now + dur + 0.05);
-        }
-
-        // ── 2. Epic Fanfare ──
-        function playEpic(ctx, now) {
-            const dur = 4.5;
-            [0, 0.65, 1.3, 2.0, 2.65, 3.3, 3.9].forEach(t => {
-                const o = mkOsc(ctx, 'sine', 120), g = mkGain(ctx, 0);
-                o.connect(g); g.connect(masterGain);
-                o.frequency.setValueAtTime(120, now + t); o.frequency.exponentialRampToValueAtTime(28, now + t + 0.45);
-                g.gain.setValueAtTime(1.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.55);
-                o.start(now + t); o.stop(now + t + 0.6);
-                const ns = mkNoise(ctx, 0.08), flt = ctx.createBiquadFilter(), dg = mkGain(ctx, 0);
-                flt.type = 'lowpass'; flt.frequency.value = 350;
-                ns.connect(flt); flt.connect(dg); dg.connect(masterGain);
-                dg.gain.setValueAtTime(0.9, now + t); dg.gain.exponentialRampToValueAtTime(0.001, now + t + 0.07);
-                ns.start(now + t); ns.stop(now + t + 0.1);
-            });
-            [[0, [165, 208, 247]], [0.65, [175, 220, 262]], [1.3, [196, 247, 294]], [2.0, [220, 277, 330]],
-            [2.65, [175, 220, 262]], [3.3, [220, 277, 330]], [3.9, [262, 330, 392]]].forEach(([t, freqs]) => {
-                freqs.forEach(f => {
-                    const o = mkOsc(ctx, 'sawtooth', f), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                    flt.type = 'lowpass'; flt.frequency.value = 900; flt.Q.value = 3;
-                    o.connect(flt); flt.connect(g); g.connect(masterGain);
-                    g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.32, now + t + 0.04);
-                    g.gain.setValueAtTime(0.3, now + t + 0.3); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.6);
-                    o.start(now + t); o.stop(now + t + 0.65);
-                });
-            });
-            [0, 1.3, 2.65, 3.9].forEach(t => {
-                const n = mkNoise(ctx, 0.7), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                flt.type = 'highpass'; flt.frequency.value = 5000;
-                n.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.7);
-                n.start(now + t); n.stop(now + t + 0.75);
-            });
-            const sw = mkOsc(ctx, 'triangle', 196), sg2 = mkGain(ctx, 0);
-            sw.connect(sg2); sg2.connect(masterGain);
-            sw.frequency.linearRampToValueAtTime(523, now + dur);
-            sg2.gain.linearRampToValueAtTime(0.22, now + 0.5);
-            sg2.gain.setValueAtTime(0.22, now + dur - 0.4); sg2.gain.linearRampToValueAtTime(0, now + dur);
-            sw.start(now); sw.stop(now + dur);
-            const bm = mkOsc(ctx, 'sine', 50), bg2 = mkGain(ctx, 0);
-            bm.connect(bg2); bg2.connect(masterGain);
-            bg2.gain.setValueAtTime(2.0, now + dur - 0.05); bg2.gain.exponentialRampToValueAtTime(0.001, now + dur + 0.5);
-            bm.start(now + dur - 0.05); bm.stop(now + dur + 0.55);
-        }
-
-        // ── 3. War Siren ──
-        function playSiren(ctx, now) {
-            const dur = 4.0;
-            for (let i = 0; i < 8; i++) {
-                const t = i * 0.5, o = mkOsc(ctx, 'sawtooth', 440 + (i % 2) * 220);
-                const flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                flt.type = 'peaking'; flt.frequency.value = 800; flt.gain.value = 18;
-                o.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.42, now + t + 0.02);
-                g.gain.setValueAtTime(0.42, now + t + 0.22); g.gain.linearRampToValueAtTime(0, now + t + 0.48);
-                o.start(now + t); o.stop(now + t + 0.5);
-            }
-            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach((t, i) => {
-                const o = mkOsc(ctx, 'sine', i % 2 === 0 ? 52 : 69), g = mkGain(ctx, 0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(1.4, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.42);
-                o.start(now + t); o.stop(now + t + 0.45);
-            });
-            for (let i = 0; i < 16; i++) {
-                const t = i * 0.25, n = mkNoise(ctx, 0.06);
-                const flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                flt.type = 'highpass'; flt.frequency.value = 8000;
-                n.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(i % 4 === 0 ? 0.65 : 0.28, now + t);
-                g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.05);
-                n.start(now + t); n.stop(now + t + 0.07);
-            }
-            const mod = mkOsc(ctx, 'sine', 9), carrier = mkOsc(ctx, 'square', 330);
-            const mGain = mkGain(ctx, 160), cg = mkGain(ctx, 0);
-            mod.connect(mGain); mGain.connect(carrier.frequency);
-            carrier.connect(cg); cg.connect(masterGain);
-            cg.gain.setValueAtTime(0, now); cg.gain.linearRampToValueAtTime(0.3, now + 0.1);
-            cg.gain.setValueAtTime(0.3, now + 3.6); cg.gain.linearRampToValueAtTime(0, now + dur);
-            mod.start(now); mod.stop(now + dur);
-            carrier.start(now); carrier.stop(now + dur);
-            const scr = mkOsc(ctx, 'sawtooth', 220), scrg = mkGain(ctx, 0);
-            scr.connect(scrg); scrg.connect(masterGain);
-            scr.frequency.linearRampToValueAtTime(1760, now + dur);
-            scrg.gain.setValueAtTime(0.5, now + 3.5); scrg.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            scr.start(now + 3.5); scr.stop(now + dur + 0.05);
-        }
-
-        // ── 4. Digital Boss ──
-        function playDigital(ctx, now) {
-            const dur = 4.5;
-            [262, 330, 392, 494, 523, 659, 784, 988, 1047, 988, 784, 659, 523, 494, 392, 330].forEach((f, i) => {
-                const t = i * 0.11, o = mkOsc(ctx, 'square', f), g = mkGain(ctx, 0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.22, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.09);
-                o.start(now + t); o.stop(now + t + 0.11);
-            });
-            [[1.8, [147, 185, 220]], [2.15, [165, 208, 247]], [2.5, [185, 233, 277]], [2.85, [220, 277, 330]],
-            [3.2, [196, 247, 294]], [3.55, [220, 277, 330]]].forEach(([t, freqs]) => {
-                freqs.forEach(f => {
-                    const o = mkOsc(ctx, 'square', f), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                    flt.type = 'lowpass'; flt.frequency.value = 2200;
-                    o.connect(flt); flt.connect(g); g.connect(masterGain);
-                    g.gain.setValueAtTime(0.38, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.32);
-                    o.start(now + t); o.stop(now + t + 0.35);
-                });
-            });
-            [0, 0.44, 0.88, 1.32, 1.76, 1.8, 2.15, 2.5, 2.85, 3.2, 3.55, 3.9].forEach(t => {
-                const o = mkOsc(ctx, 'sine', 155), g = mkGain(ctx, 0);
-                o.connect(g); g.connect(masterGain);
-                o.frequency.exponentialRampToValueAtTime(28, now + t + 0.16);
-                g.gain.setValueAtTime(0.95, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.2);
-                o.start(now + t); o.stop(now + t + 0.22);
-            });
-            for (let i = 0; i < 20; i++) {
-                const t = i * 0.22, n = mkNoise(ctx, 0.04);
-                const flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
-                flt.type = 'bandpass'; flt.frequency.value = 4200; flt.Q.value = 0.7;
-                n.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.28, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.04);
-                n.start(now + t); n.stop(now + t + 0.05);
-            }
-            [1047, 988, 880, 784, 698, 659, 587, 523, 494, 440, 392, 330, 294, 262, 220, 196].forEach((f, i) => {
-                const t = 1.8 + i * 0.14, o = mkOsc(ctx, 'square', f), g = mkGain(ctx, 0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.2, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
-                o.start(now + t); o.stop(now + t + 0.14);
-            });
-            [131, 165, 196, 262].forEach(f => {
-                const o = mkOsc(ctx, 'square', f), g = mkGain(ctx, 0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0, now + 4.1); g.gain.linearRampToValueAtTime(0.45, now + 4.16);
-                g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                o.start(now + 4.1); o.stop(now + dur + 0.05);
-            });
-        }
-
-        function playAlarm(style) {
-            if (!audioCtx || !masterGain) return;
-            stopAlarm();
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime + 0.05;
-                if (style === 'edm') playEdm(audioCtx, now);
-                else if (style === 'epic') playEpic(audioCtx, now);
-                else if (style === 'siren') playSiren(audioCtx, now);
-                else if (style === 'digital') playDigital(audioCtx, now);
-            } catch (e) { console.warn('Audio error:', e); }
-        }
-
-        // ── Controls ──────────────────────────────────────────────────────
         function togglePause() {
             paused = !paused;
-            if (!paused) lastTickTime = Date.now(); // reset so no time jump
             document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
             document.getElementById('statusText').textContent = paused ? 'paused' : 'running';
             document.getElementById('timeDisplay').classList.toggle('paused', paused);
@@ -1060,34 +989,36 @@
         }
 
         function resetTimer() {
-            cancelAnimationFrame(rafId); stopAlarm();
+            clearInterval(timerId); timerId = null;
+            stopAlarm();
+            notifying = false; paused = false; loopCount = 1; remaining = 0;
             document.getElementById('timerPanel').classList.remove('visible');
             document.getElementById('setupPanel').classList.remove('hidden');
             document.getElementById('notifyMsg').classList.remove('show');
-            paused = false; loopCount = 1; accumulatedMs = 0;
             document.getElementById('statusText').textContent = 'running';
             document.getElementById('statusDot').classList.remove('notify');
             document.getElementById('statusDot').style.animationPlayState = 'running';
             document.getElementById('timeDisplay').classList.remove('paused');
             document.getElementById('timeDisplay').style.color = 'var(--text)';
-            ringProgress.style.strokeDashoffset = 0;
-            ringProgress.style.stroke = 'var(--accent)';
+            ringEl.style.strokeDashoffset = 0;
+            ringEl.style.stroke = 'var(--accent)';
         }
 
-        // ── Init ──────────────────────────────────────────────────────────
-        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
+        // Use addEventListener for most reliable mobile tap detection
+        document.getElementById('startBtn').addEventListener('click', startTimer);
 
-        ['secondsInput', 'minutesInput'].forEach(id => {
+        ['secondsInput', 'minutesInput'].forEach(function (id) {
             document.getElementById(id).addEventListener('change', function () {
                 this.value = Math.max(0, Math.min(59, parseInt(this.value) || 0));
             });
         });
-
         document.getElementById('hoursInput').addEventListener('change', function () {
             this.value = Math.max(0, Math.min(99, parseInt(this.value) || 0));
         });
+
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
     </script>
 </body>
 
