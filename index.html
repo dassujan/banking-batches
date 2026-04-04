@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loop Timer</title>
+    <link rel="icon" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --panel: #111118;
+            --border: #1e1e2e;
+            --accent: #e8ff47;
+            --accent2: #ff6b35;
+            --accent3: #5bf5c8;
+            --text: #f0f0f0;
+            --muted: #555570;
+            --ring-size: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(232, 255, 71, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(232, 255, 71, 0.03) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(232, 255, 71, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+            transition: background 0.5s;
+        }
+
+        body.notifying::after {
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, transparent 70%);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 26px;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(36px, 6vw, 56px);
+            letter-spacing: 0.12em;
+            color: #ff4747;
+            line-height: 1;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Setup Panel */
+        .setup-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 28px 34px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+            width: 390px;
+        }
+
+        .setup-panel.hidden {
+            display: none;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        label {
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-input-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .time-input-wrap span {
+            font-size: 9px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        input[type="number"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            color: var(--text);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 38px;
+            letter-spacing: 0.06em;
+            text-align: center;
+            padding: 10px 6px;
+            outline: none;
+            transition: border-color 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--accent);
+        }
+
+        .colon {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 30px;
+            color: var(--muted);
+            margin-bottom: 18px;
+            flex: 0 0 12px;
+            text-align: center;
+        }
+
+        /* Music selector */
+        .music-select-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .music-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .music-opt {
+            padding: 11px 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            color: var(--muted);
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+
+        .music-opt:hover {
+            border-color: var(--accent3);
+            color: var(--accent3);
+        }
+
+        .music-opt.active {
+            border-color: var(--accent3);
+            color: var(--accent3);
+            background: rgba(91, 245, 200, 0.06);
+        }
+
+        .music-opt .mi {
+            font-size: 18px;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: #0a0a0f;
+            border: none;
+            border-radius: 2px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .start-btn:hover {
+            background: #d4eb35;
+        }
+
+        .start-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Timer Panel */
+        .timer-panel {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .timer-panel.visible {
+            display: flex;
+        }
+
+        .ring-wrap {
+            position: relative;
+            width: var(--ring-size);
+            height: var(--ring-size);
+        }
+
+        .ring-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 6;
+        }
+
+        .ring-progress {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 6;
+            stroke-linecap: butt;
+            transition: stroke-dashoffset 0.5s linear, stroke 0.3s;
+        }
+
+        .ring-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .time-display {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 52px;
+            letter-spacing: 0.04em;
+            line-height: 1;
+            color: var(--text);
+            transition: color 0.3s;
+        }
+
+        .time-label {
+            font-size: 9px;
+            letter-spacing: 0.35em;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .music-badge {
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            color: var(--accent3);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .loop-count {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .loop-count span {
+            color: var(--accent);
+        }
+
+        .notify-ring {
+            position: absolute;
+            inset: -20px;
+            border-radius: 50%;
+            border: 2px solid var(--accent2);
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        .notify-ring.pulse {
+            animation: ringPulse 0.7s ease-out forwards;
+        }
+
+        @keyframes ringPulse {
+            0% {
+                opacity: 1;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.25);
+            }
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: blink 1s infinite;
+        }
+
+        .status-dot.notify {
+            background: var(--accent2);
+            animation: blinkFast 0.25s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.2
+            }
+        }
+
+        @keyframes blinkFast {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0
+            }
+        }
+
+        .music-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .music-icon-btn {
+            font-size: 16px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+            background: none;
+            border: none;
+        }
+
+        .music-icon-btn:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 110px;
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #d4eb35;
+        }
+
+        .vol-label {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.15em;
+            min-width: 32px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .ctrl-btn {
+            padding: 10px 22px;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ctrl-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .ctrl-btn.danger:hover {
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+        .flash {
+            position: fixed;
+            inset: 0;
+            background: var(--accent2);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .flash.pop {
+            animation: flashPop 0.6s ease-out forwards;
+        }
+
+        @keyframes flashPop {
+            0% {
+                opacity: 0.22
+            }
+
+            100% {
+                opacity: 0
+            }
+        }
+
+        .notify-msg {
+            position: fixed;
+            top: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-90px);
+            background: var(--accent2);
+            color: #fff;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 0.15em;
+            padding: 12px 32px;
+            border-radius: 2px;
+            z-index: 1000;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+        }
+
+        .notify-msg.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .time-display.paused {
+            opacity: 0.45;
+        }
+
+        @media (max-width: 430px) {
+            :root {
+                --ring-size: 230px;
+            }
+
+            .time-display {
+                font-size: 40px;
+            }
+
+            .setup-panel {
+                width: 96vw;
+                padding: 20px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="flash" id="flash"></div>
+    <div class="notify-msg" id="notifyMsg">⏰ TIME'S UP!</div>
+
+    <div class="container">
+        <div class="header">
+            <h1>LOOP TIMER</h1>
+            <p>Repeats until you close</p>
+        </div>
+
+        <!-- Setup -->
+        <div class="setup-panel" id="setupPanel">
+            <div class="input-group">
+                <label>Set Timer Duration</label>
+                <div class="input-row">
+                    <div class="time-input-wrap">
+                        <input type="number" id="hoursInput" value="0" min="0" max="99">
+                        <span>hrs</span>
+                    </div>
+                    <div class="colon">:</div>
+                    <div class="time-input-wrap">
+                        <input type="number" id="minutesInput" value="0" min="0" max="59">
+                        <span>min</span>
+                    </div>
+                    <div class="colon">:</div>
+                    <div class="time-input-wrap">
+                        <input type="number" id="secondsInput" value="0" min="0" max="59">
+                        <span>sec</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="music-select-group">
+                <label>Alarm Music Style</label>
+                <div class="music-options">
+                    <button class="music-opt active" data-music="edm" onclick="selectMusic(this)">
+                        <span class="mi">⚡</span>EDM Pulse
+                    </button>
+                    <button class="music-opt" data-music="epic" onclick="selectMusic(this)">
+                        <span class="mi">🎺</span>Epic Fanfare
+                    </button>
+                    <button class="music-opt" data-music="siren" onclick="selectMusic(this)">
+                        <span class="mi">🚨</span>War Siren
+                    </button>
+                    <button class="music-opt" data-music="digital" onclick="selectMusic(this)">
+                        <span class="mi">🎮</span>Digital Boss
+                    </button>
+                </div>
+            </div>
+
+            <button class="start-btn" onclick="startTimer()">START LOOP</button>
+        </div>
+
+        <!-- Timer -->
+        <div class="timer-panel" id="timerPanel">
+            <div class="ring-wrap">
+                <div class="notify-ring" id="notifyRing"></div>
+                <svg class="ring-svg" viewBox="0 0 280 280">
+                    <circle class="ring-bg" cx="140" cy="140" r="128" />
+                    <circle class="ring-progress" id="ringProgress" cx="140" cy="140" r="128" />
+                </svg>
+                <div class="ring-center">
+                    <div class="time-display" id="timeDisplay">00:00:00</div>
+                    <div class="time-label">remaining</div>
+                    <div class="music-badge" id="musicBadge">⚡ EDM Pulse</div>
+                </div>
+            </div>
+
+            <div class="loop-count">Loop <span id="loopNum">1</span> &mdash; interval: <span id="intervalLabel">5m
+                    0s</span></div>
+
+            <div class="status-bar">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">running</span>
+            </div>
+
+            <div class="music-bar">
+                <button class="music-icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute">🔔</button>
+                <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)">
+                <span class="vol-label" id="volLabel">80%</span>
+            </div>
+
+            <div class="controls">
+                <button class="ctrl-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
+                <button class="ctrl-btn danger" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── State ─────────────────────────────────────────────────────────
+        let totalSeconds = 0, remaining = 0, loopCount = 1;
+        let intervalId = null, paused = false, selectedMusic = 'edm';
+
+        const circumference = 2 * Math.PI * 128;
+        const ringProgress = document.getElementById('ringProgress');
+        ringProgress.style.strokeDasharray = circumference;
+        ringProgress.style.strokeDashoffset = 0;
+
+        const musicLabels = {
+            edm: '⚡ EDM Pulse', epic: '🎺 Epic Fanfare',
+            siren: '🚨 War Siren', digital: '🎮 Digital Boss'
+        };
+
+        function selectMusic(btn) {
+            document.querySelectorAll('.music-opt').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedMusic = btn.dataset.music;
+        }
+
+        // ── Timer ─────────────────────────────────────────────────────────
+        function startTimer() {
+            const hrs = parseInt(document.getElementById('hoursInput').value) || 0;
+            const mins = parseInt(document.getElementById('minutesInput').value) || 0;
+            const secs = parseInt(document.getElementById('secondsInput').value) || 0;
+            totalSeconds = hrs * 3600 + mins * 60 + secs;
+            if (totalSeconds <= 0) { alert('Please enter a valid time!'); return; }
+
+            getAudioCtx();
+            loopCount = 1; remaining = totalSeconds; paused = false;
+
+            let lbl = '';
+            if (hrs) lbl += hrs + 'h ';
+            if (mins) lbl += mins + 'm ';
+            lbl += secs + 's';
+            document.getElementById('intervalLabel').textContent = lbl.trim();
+            document.getElementById('musicBadge').textContent = musicLabels[selectedMusic];
+            document.getElementById('setupPanel').classList.add('hidden');
+            document.getElementById('timerPanel').classList.add('visible');
+            updateDisplay(); runLoop();
+        }
+
+        function runLoop() {
+            clearInterval(intervalId);
+            intervalId = setInterval(tick, 1000);
+        }
+
+        function tick() {
+            if (paused) return;
+            remaining--;
+            updateDisplay();
+            if (remaining <= 0) { clearInterval(intervalId); triggerNotification(); }
+        }
+
+        function updateDisplay() {
+            const h = Math.floor(remaining / 3600);
+            const m = Math.floor((remaining % 3600) / 60);
+            const s = remaining % 60;
+            document.getElementById('timeDisplay').textContent =
+                String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+
+            const progress = remaining / totalSeconds;
+            ringProgress.style.strokeDashoffset = circumference * (1 - progress);
+
+            if (progress < 0.2) {
+                ringProgress.style.stroke = 'var(--accent2)';
+                document.getElementById('timeDisplay').style.color = 'var(--accent2)';
+            } else if (progress < 0.5) {
+                ringProgress.style.stroke = 'var(--accent3)';
+                document.getElementById('timeDisplay').style.color = 'var(--text)';
+            } else {
+                ringProgress.style.stroke = 'var(--accent)';
+                document.getElementById('timeDisplay').style.color = 'var(--text)';
+            }
+            document.getElementById('loopNum').textContent = loopCount;
+        }
+
+        function triggerNotification() {
+            const flash = document.getElementById('flash');
+            flash.classList.remove('pop'); void flash.offsetWidth; flash.classList.add('pop');
+
+            document.body.classList.add('notifying');
+            setTimeout(() => document.body.classList.remove('notifying'), 2000);
+
+            const ring = document.getElementById('notifyRing');
+            ring.classList.remove('pulse'); void ring.offsetWidth; ring.classList.add('pulse');
+
+            const dot = document.getElementById('statusDot');
+            dot.classList.add('notify');
+            document.getElementById('statusText').textContent = 'notifying!';
+
+            const msg = document.getElementById('notifyMsg');
+            msg.textContent = '⏰ LOOP ' + loopCount + ' DONE!';
+            msg.classList.add('show');
+
+            if (Notification.permission === 'granted') {
+                new Notification('⏰ Loop Timer', { body: `Loop ${loopCount} complete! Restarting…` });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(p => {
+                    if (p === 'granted') new Notification('⏰ Loop Timer', { body: `Loop ${loopCount} complete!` });
+                });
+            }
+
+            playAlarm(selectedMusic);
+
+            setTimeout(() => {
+                stopAlarm();
+                msg.classList.remove('show');
+                dot.classList.remove('notify');
+                document.getElementById('statusText').textContent = 'running';
+                loopCount++; remaining = totalSeconds;
+                updateDisplay(); runLoop();
+            }, 4000);
+        }
+
+        // ── Audio Engine ──────────────────────────────────────────────────
+        let audioCtx = null, masterGain = null, alarmNodes = [];
+        let volumeLevel = 0.8, muted = false;
+
+        function getAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = muted ? 0 : volumeLevel;
+                masterGain.connect(audioCtx.destination);
+            }
+            return audioCtx;
+        }
+
+        function updateVolume(val) {
+            volumeLevel = val / 100;
+            document.getElementById('volLabel').textContent = val + '%';
+            if (masterGain && !muted) masterGain.gain.value = volumeLevel;
+        }
+
+        function toggleMute() {
+            muted = !muted;
+            document.getElementById('muteBtn').textContent = muted ? '🔕' : '🔔';
+            if (masterGain) masterGain.gain.value = muted ? 0 : volumeLevel;
+        }
+
+        function stopAlarm() {
+            alarmNodes.forEach(n => { try { n.stop(); } catch (e) { } });
+            alarmNodes = [];
+        }
+
+        function mkOsc(ctx, type, freq) {
+            const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
+            alarmNodes.push(o); return o;
+        }
+
+        function mkGain(ctx, val) {
+            const g = ctx.createGain(); g.gain.value = val; return g;
+        }
+
+        function mkNoise(ctx, dur) {
+            const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+            const s = ctx.createBufferSource(); s.buffer = buf;
+            alarmNodes.push(s); return s;
+        }
+
+        // ── 1. EDM Pulse — punchy kicks, siren, chord stabs, snare ──
+        function playEdm(ctx, now) {
+            const dur = 4.0;
+            // Bass kicks
+            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(t => {
+                const o = mkOsc(ctx, 'sine', 180), g = mkGain(ctx, 0);
+                o.connect(g); g.connect(masterGain);
+                o.frequency.exponentialRampToValueAtTime(35, now + t + 0.2);
+                g.gain.setValueAtTime(1.1, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.25);
+                o.start(now + t); o.stop(now + t + 0.28);
+            });
+            // Siren
+            const sir = mkOsc(ctx, 'sawtooth', 660), sg = mkGain(ctx, 0);
+            sir.connect(sg); sg.connect(masterGain);
+            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach((t, i) => sir.frequency.setValueAtTime(i % 2 === 0 ? 660 : 990, now + t));
+            sg.gain.setValueAtTime(0, now); sg.gain.linearRampToValueAtTime(0.3, now + 0.05);
+            sg.gain.setValueAtTime(0.3, now + 3.6); sg.gain.linearRampToValueAtTime(0, now + dur);
+            sir.start(now); sir.stop(now + dur);
+            // Chord stabs
+            [[0, 523, 659, 784], [0.25, 587, 740, 880], [0.75, 523, 659, 784], [1.25, 587, 740, 880],
+            [1.75, 523, 659, 784], [2.25, 659, 830, 988], [2.75, 523, 659, 784], [3.25, 698, 880, 1047]].forEach(([t, ...fr]) => {
+                fr.forEach(f => {
+                    const o = mkOsc(ctx, 'square', f), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                    flt.type = 'bandpass'; flt.frequency.value = f; flt.Q.value = 2;
+                    o.connect(flt); flt.connect(g); g.connect(masterGain);
+                    g.gain.setValueAtTime(0.16, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.22);
+                    o.start(now + t); o.stop(now + t + 0.25);
+                });
+            });
+            // Snare
+            [0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.25].forEach(t => {
+                const n = mkNoise(ctx, 0.14), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                flt.type = 'highpass'; flt.frequency.value = 1800;
+                n.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.55, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
+                n.start(now + t); n.stop(now + t + 0.16);
+            });
+            // Crescendo
+            const big = mkOsc(ctx, 'sine', 440), bg = mkGain(ctx, 0);
+            big.connect(bg); bg.connect(masterGain);
+            big.frequency.setValueAtTime(440, now + 3.4); big.frequency.linearRampToValueAtTime(1320, now + dur);
+            bg.gain.linearRampToValueAtTime(0.7, now + 3.6); bg.gain.exponentialRampToValueAtTime(0.001, now + dur);
+            big.start(now + 3.4); big.stop(now + dur + 0.05);
+        }
+
+        // ── 2. Epic Fanfare — war drums, orchestral horns, cymbals, boom ──
+        function playEpic(ctx, now) {
+            const dur = 4.5;
+            // War drums
+            [0, 0.65, 1.3, 2.0, 2.65, 3.3, 3.9].forEach(t => {
+                const o = mkOsc(ctx, 'sine', 120), g = mkGain(ctx, 0);
+                o.connect(g); g.connect(masterGain);
+                o.frequency.setValueAtTime(120, now + t); o.frequency.exponentialRampToValueAtTime(28, now + t + 0.45);
+                g.gain.setValueAtTime(1.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.55);
+                o.start(now + t); o.stop(now + t + 0.6);
+                const ns = mkNoise(ctx, 0.08), flt = ctx.createBiquadFilter(), dg = mkGain(ctx, 0);
+                flt.type = 'lowpass'; flt.frequency.value = 350;
+                ns.connect(flt); flt.connect(dg); dg.connect(masterGain);
+                dg.gain.setValueAtTime(0.9, now + t); dg.gain.exponentialRampToValueAtTime(0.001, now + t + 0.07);
+                ns.start(now + t); ns.stop(now + t + 0.1);
+            });
+            // Horn stabs
+            [[0, [165, 208, 247]], [0.65, [175, 220, 262]], [1.3, [196, 247, 294]], [2.0, [220, 277, 330]],
+            [2.65, [175, 220, 262]], [3.3, [220, 277, 330]], [3.9, [262, 330, 392]]].forEach(([t, freqs]) => {
+                freqs.forEach(f => {
+                    const o = mkOsc(ctx, 'sawtooth', f), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                    flt.type = 'lowpass'; flt.frequency.value = 900; flt.Q.value = 3;
+                    o.connect(flt); flt.connect(g); g.connect(masterGain);
+                    g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.32, now + t + 0.04);
+                    g.gain.setValueAtTime(0.3, now + t + 0.3); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.6);
+                    o.start(now + t); o.stop(now + t + 0.65);
+                });
+            });
+            // Cymbal crashes
+            [0, 1.3, 2.65, 3.9].forEach(t => {
+                const n = mkNoise(ctx, 0.7), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                flt.type = 'highpass'; flt.frequency.value = 5000;
+                n.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.7);
+                n.start(now + t); n.stop(now + t + 0.75);
+            });
+            // String swell
+            const sw = mkOsc(ctx, 'triangle', 196), sg2 = mkGain(ctx, 0);
+            sw.connect(sg2); sg2.connect(masterGain);
+            sw.frequency.linearRampToValueAtTime(523, now + dur);
+            sg2.gain.linearRampToValueAtTime(0.22, now + 0.5);
+            sg2.gain.setValueAtTime(0.22, now + dur - 0.4); sg2.gain.linearRampToValueAtTime(0, now + dur);
+            sw.start(now); sw.stop(now + dur);
+            // Final BOOM
+            const bm = mkOsc(ctx, 'sine', 50), bg2 = mkGain(ctx, 0);
+            bm.connect(bg2); bg2.connect(masterGain);
+            bg2.gain.setValueAtTime(2.0, now + dur - 0.05); bg2.gain.exponentialRampToValueAtTime(0.001, now + dur + 0.5);
+            bm.start(now + dur - 0.05); bm.stop(now + dur + 0.55);
+        }
+
+        // ── 3. War Siren — industrial klaxon + metal rhythm + warble ──
+        function playSiren(ctx, now) {
+            const dur = 4.0;
+            // Industrial klaxon pulses
+            for (let i = 0; i < 8; i++) {
+                const t = i * 0.5, o = mkOsc(ctx, 'sawtooth', 440 + (i % 2) * 220);
+                const flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                flt.type = 'peaking'; flt.frequency.value = 800; flt.gain.value = 18;
+                o.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.42, now + t + 0.02);
+                g.gain.setValueAtTime(0.42, now + t + 0.22); g.gain.linearRampToValueAtTime(0, now + t + 0.48);
+                o.start(now + t); o.stop(now + t + 0.5);
+            }
+            // Sub bass pulse
+            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach((t, i) => {
+                const o = mkOsc(ctx, 'sine', i % 2 === 0 ? 52 : 69), g = mkGain(ctx, 0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(1.4, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.42);
+                o.start(now + t); o.stop(now + t + 0.45);
+            });
+            // Metal hi-hat machine gun
+            for (let i = 0; i < 16; i++) {
+                const t = i * 0.25, n = mkNoise(ctx, 0.06);
+                const flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                flt.type = 'highpass'; flt.frequency.value = 8000;
+                n.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(i % 4 === 0 ? 0.65 : 0.28, now + t);
+                g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.05);
+                n.start(now + t); n.stop(now + t + 0.07);
+            }
+            // FM warble alert
+            const mod = mkOsc(ctx, 'sine', 9), carrier = mkOsc(ctx, 'square', 330);
+            const mGain = mkGain(ctx, 160), cg = mkGain(ctx, 0);
+            mod.connect(mGain); mGain.connect(carrier.frequency);
+            carrier.connect(cg); cg.connect(masterGain);
+            cg.gain.setValueAtTime(0, now); cg.gain.linearRampToValueAtTime(0.3, now + 0.1);
+            cg.gain.setValueAtTime(0.3, now + 3.6); cg.gain.linearRampToValueAtTime(0, now + dur);
+            mod.start(now); mod.stop(now + dur);
+            carrier.start(now); carrier.stop(now + dur);
+            // Final screech sweep
+            const scr = mkOsc(ctx, 'sawtooth', 220), scrg = mkGain(ctx, 0);
+            scr.connect(scrg); scrg.connect(masterGain);
+            scr.frequency.linearRampToValueAtTime(1760, now + dur);
+            scrg.gain.setValueAtTime(0.5, now + 3.5); scrg.gain.exponentialRampToValueAtTime(0.001, now + dur);
+            scr.start(now + 3.5); scr.stop(now + dur + 0.05);
+        }
+
+        // ── 4. Digital Boss — 8-bit arpeggio, power chords, chiptune drums ──
+        function playDigital(ctx, now) {
+            const dur = 4.5;
+            // Fast arp run up
+            [262, 330, 392, 494, 523, 659, 784, 988, 1047, 988, 784, 659, 523, 494, 392, 330].forEach((f, i) => {
+                const t = i * 0.11, o = mkOsc(ctx, 'square', f), g = mkGain(ctx, 0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.22, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.09);
+                o.start(now + t); o.stop(now + t + 0.11);
+            });
+            // Boss power chord hits
+            [[1.8, [147, 185, 220]], [2.15, [165, 208, 247]], [2.5, [185, 233, 277]], [2.85, [220, 277, 330]],
+            [3.2, [196, 247, 294]], [3.55, [220, 277, 330]]].forEach(([t, freqs]) => {
+                freqs.forEach(f => {
+                    const o = mkOsc(ctx, 'square', f), flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                    flt.type = 'lowpass'; flt.frequency.value = 2200;
+                    o.connect(flt); flt.connect(g); g.connect(masterGain);
+                    g.gain.setValueAtTime(0.38, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.32);
+                    o.start(now + t); o.stop(now + t + 0.35);
+                });
+            });
+            // 8-bit kick
+            [0, 0.44, 0.88, 1.32, 1.76, 1.8, 2.15, 2.5, 2.85, 3.2, 3.55, 3.9].forEach(t => {
+                const o = mkOsc(ctx, 'sine', 155), g = mkGain(ctx, 0);
+                o.connect(g); g.connect(masterGain);
+                o.frequency.exponentialRampToValueAtTime(28, now + t + 0.16);
+                g.gain.setValueAtTime(0.95, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.2);
+                o.start(now + t); o.stop(now + t + 0.22);
+            });
+            // Chiptune hi-hat
+            for (let i = 0; i < 20; i++) {
+                const t = i * 0.22, n = mkNoise(ctx, 0.04);
+                const flt = ctx.createBiquadFilter(), g = mkGain(ctx, 0);
+                flt.type = 'bandpass'; flt.frequency.value = 4200; flt.Q.value = 0.7;
+                n.connect(flt); flt.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.28, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.04);
+                n.start(now + t); n.stop(now + t + 0.05);
+            }
+            // Descending boss melody
+            [1047, 988, 880, 784, 698, 659, 587, 523, 494, 440, 392, 330, 294, 262, 220, 196].forEach((f, i) => {
+                const t = 1.8 + i * 0.14, o = mkOsc(ctx, 'square', f), g = mkGain(ctx, 0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0.2, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
+                o.start(now + t); o.stop(now + t + 0.14);
+            });
+            // Grand finale chord
+            [131, 165, 196, 262].forEach(f => {
+                const o = mkOsc(ctx, 'square', f), g = mkGain(ctx, 0);
+                o.connect(g); g.connect(masterGain);
+                g.gain.setValueAtTime(0, now + 4.1); g.gain.linearRampToValueAtTime(0.45, now + 4.16);
+                g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                o.start(now + 4.1); o.stop(now + dur + 0.05);
+            });
+        }
+
+        function playAlarm(style) {
+            stopAlarm();
+            try {
+                const ctx = getAudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const now = ctx.currentTime + 0.05;
+                if (style === 'edm') playEdm(ctx, now);
+                else if (style === 'epic') playEpic(ctx, now);
+                else if (style === 'siren') playSiren(ctx, now);
+                else if (style === 'digital') playDigital(ctx, now);
+            } catch (e) { console.warn('Audio error:', e); }
+        }
+
+        // ── Controls ──────────────────────────────────────────────────────
+        function togglePause() {
+            paused = !paused;
+            document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+            document.getElementById('statusText').textContent = paused ? 'paused' : 'running';
+            document.getElementById('timeDisplay').classList.toggle('paused', paused);
+            document.getElementById('statusDot').style.animationPlayState = paused ? 'paused' : 'running';
+        }
+
+        function resetTimer() {
+            clearInterval(intervalId); stopAlarm();
+            document.getElementById('timerPanel').classList.remove('visible');
+            document.getElementById('setupPanel').classList.remove('hidden');
+            document.getElementById('notifyMsg').classList.remove('show');
+            paused = false; loopCount = 1;
+            document.getElementById('statusText').textContent = 'running';
+            document.getElementById('statusDot').classList.remove('notify');
+            document.getElementById('statusDot').style.animationPlayState = 'running';
+            document.getElementById('timeDisplay').classList.remove('paused');
+            document.getElementById('timeDisplay').style.color = 'var(--text)';
+            ringProgress.style.strokeDashoffset = 0;
+            ringProgress.style.stroke = 'var(--accent)';
+        }
+
+        // ── Init ──────────────────────────────────────────────────────────
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        ['secondsInput', 'minutesInput'].forEach(id => {
+            document.getElementById(id).addEventListener('change', function () {
+                this.value = Math.max(0, Math.min(59, parseInt(this.value) || 0));
+            });
+        });
+
+        document.getElementById('hoursInput').addEventListener('change', function () {
+            this.value = Math.max(0, Math.min(99, parseInt(this.value) || 0));
+        });
+    </script>
+</body>
+
+</html>
