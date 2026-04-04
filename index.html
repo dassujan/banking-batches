@@ -3,9 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Loop Timer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap"
+    <link rel="icon" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400&display=swap"
         rel="stylesheet">
     <style>
         :root {
@@ -17,13 +18,13 @@
             --accent3: #5bf5c8;
             --text: #f0f0f0;
             --muted: #555570;
-            --ring-size: 280px;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -35,239 +36,194 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            position: relative;
+            padding: 20px;
         }
 
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background-image: linear-gradient(rgba(232, 255, 71, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(232, 255, 71, 0.03) 1px, transparent 1px);
+            pointer-events: none;
+            background-image: linear-gradient(rgba(232, 255, 71, .03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(232, 255, 71, .03) 1px, transparent 1px);
             background-size: 48px 48px;
-            pointer-events: none;
         }
 
-        body::after {
-            content: '';
-            position: fixed;
-            top: -40%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(232, 255, 71, 0.06) 0%, transparent 70%);
-            pointer-events: none;
-            transition: background 0.5s;
-        }
-
-        body.notifying::after {
-            background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, transparent 70%);
-        }
-
-        .container {
+        /* ── SETUP ── */
+        #setup {
+            width: 100%;
+            max-width: 380px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 26px;
-            z-index: 1;
+            gap: 20px;
         }
 
-        .header {
-            text-align: center;
+        #setup.gone {
+            display: none;
         }
 
-        .header h1 {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: clamp(36px, 6vw, 56px);
-            letter-spacing: 0.12em;
+        h1 {
+            font-family: 'Bebas Neue';
+            font-size: 52px;
+            letter-spacing: .12em;
             color: #ff4747;
+            text-align: center;
             line-height: 1;
         }
 
-        .header p {
-            font-size: 11px;
+        .sub {
+            font-size: 10px;
             color: var(--muted);
-            letter-spacing: 0.25em;
+            letter-spacing: .25em;
+            text-transform: uppercase;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 22px 20px;
+        }
+
+        .lbl {
+            font-size: 10px;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* time inputs */
+        .time-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .time-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .time-col span {
+            font-size: 9px;
+            letter-spacing: .22em;
+            color: var(--muted);
             text-transform: uppercase;
             margin-top: 4px;
         }
 
-        .setup-panel {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 28px 34px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 22px;
-            width: 390px;
-        }
-
-        .setup-panel.hidden {
-            display: none;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 100%;
-        }
-
-        label {
-            font-size: 10px;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .input-row {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .time-input-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            flex: 1;
-        }
-
-        .time-input-wrap span {
-            font-size: 9px;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        input[type="number"] {
+        input[type=number] {
             width: 100%;
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 2px;
+            border-radius: 4px;
             color: var(--text);
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 38px;
-            letter-spacing: 0.06em;
+            font-family: 'Bebas Neue';
+            font-size: 42px;
             text-align: center;
-            padding: 10px 6px;
+            padding: 8px 4px;
             outline: none;
-            transition: border-color 0.2s;
             -moz-appearance: textfield;
+            touch-action: manipulation;
         }
 
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-        }
-
-        input[type="number"]:focus {
+        input[type=number]:focus {
             border-color: var(--accent);
         }
 
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
         .colon {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 30px;
+            font-family: 'Bebas Neue';
+            font-size: 32px;
             color: var(--muted);
-            margin-bottom: 18px;
-            flex: 0 0 12px;
-            text-align: center;
+            padding-bottom: 18px;
         }
 
-        .music-select-group {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .music-options {
+        /* music grid */
+        .music-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            width: 100%;
         }
 
-        .music-opt {
-            padding: 11px 8px;
+        .mopt {
+            padding: 12px 6px;
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: 2px;
+            border-radius: 4px;
             color: var(--muted);
-            font-family: 'DM Mono', monospace;
+            font-family: 'DM Mono';
             font-size: 10px;
-            letter-spacing: 0.14em;
+            letter-spacing: .12em;
             text-transform: uppercase;
             cursor: pointer;
             text-align: center;
-            transition: all 0.2s;
-            line-height: 1.5;
-            -webkit-tap-highlight-color: transparent;
+            line-height: 1.6;
             touch-action: manipulation;
+            transition: all .15s;
         }
 
-        .music-opt:hover {
-            border-color: var(--accent3);
-            color: var(--accent3);
-        }
-
-        .music-opt.active {
-            border-color: var(--accent3);
-            color: var(--accent3);
-            background: rgba(91, 245, 200, 0.06);
-        }
-
-        .music-opt .mi {
-            font-size: 18px;
+        .mopt .ico {
+            font-size: 20px;
             display: block;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
-        .start-btn {
+        .mopt.on {
+            border-color: var(--accent3);
+            color: var(--accent3);
+            background: rgba(91, 245, 200, .07);
+        }
+
+        /* start button */
+        #startBtn {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: var(--accent);
             color: #0a0a0f;
             border: none;
-            border-radius: 2px;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 20px;
-            letter-spacing: 0.15em;
+            border-radius: 4px;
+            font-family: 'Bebas Neue';
+            font-size: 22px;
+            letter-spacing: .15em;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            transition: opacity .15s;
         }
 
-        .start-btn:hover {
-            background: #d4eb35;
+        #startBtn:active {
+            opacity: .8;
         }
 
-        .start-btn:active {
-            transform: scale(0.98);
-        }
-
-        .timer-panel {
+        /* ── TIMER ── */
+        #timer {
+            width: 100%;
+            max-width: 380px;
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
         }
 
-        .timer-panel.visible {
+        #timer.show {
             display: flex;
         }
 
+        /* ring */
         .ring-wrap {
             position: relative;
-            width: var(--ring-size);
-            height: var(--ring-size);
+            width: 260px;
+            height: 260px;
         }
 
         .ring-svg {
@@ -279,109 +235,83 @@
         .ring-bg {
             fill: none;
             stroke: var(--border);
-            stroke-width: 6;
+            stroke-width: 7;
         }
 
-        .ring-progress {
+        .ring-fg {
             fill: none;
             stroke: var(--accent);
-            stroke-width: 6;
+            stroke-width: 7;
             stroke-linecap: butt;
-            transition: stroke-dashoffset 0.9s linear, stroke 0.3s;
+            transition: stroke-dashoffset 1s linear, stroke .4s;
         }
 
-        .ring-center {
+        .ring-inner {
             position: absolute;
             inset: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 2px;
         }
 
-        .time-display {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 52px;
-            letter-spacing: 0.04em;
-            line-height: 1;
+        #timeDisplay {
+            font-family: 'Bebas Neue';
+            font-size: 54px;
+            letter-spacing: .04em;
             color: var(--text);
-            transition: color 0.3s;
+            line-height: 1;
         }
 
-        .time-label {
+        .rlbl {
             font-size: 9px;
-            letter-spacing: 0.35em;
+            letter-spacing: .3em;
             color: var(--muted);
             text-transform: uppercase;
+            margin-top: 2px;
         }
 
-        .music-badge {
+        #mbadge {
             font-size: 9px;
-            letter-spacing: 0.2em;
+            letter-spacing: .18em;
             color: var(--accent3);
             text-transform: uppercase;
-            margin-top: 4px;
+            margin-top: 5px;
         }
 
-        .loop-count {
+        #loopLine {
             font-size: 11px;
-            letter-spacing: 0.2em;
+            letter-spacing: .18em;
             color: var(--muted);
             text-transform: uppercase;
         }
 
-        .loop-count span {
+        #loopLine b {
             color: var(--accent);
         }
 
-        .notify-ring {
-            position: absolute;
-            inset: -20px;
-            border-radius: 50%;
-            border: 2px solid var(--accent2);
-            opacity: 0;
-            transform: scale(0.9);
-            pointer-events: none;
-        }
-
-        .notify-ring.pulse {
-            animation: ringPulse 0.7s ease-out forwards;
-        }
-
-        @keyframes ringPulse {
-            0% {
-                opacity: 1;
-                transform: scale(0.9)
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(1.25)
-            }
-        }
-
-        .status-bar {
+        /* status */
+        .sbar {
             display: flex;
-            gap: 6px;
             align-items: center;
+            gap: 8px;
             font-size: 11px;
-            letter-spacing: 0.2em;
+            letter-spacing: .2em;
             color: var(--muted);
             text-transform: uppercase;
         }
 
-        .status-dot {
-            width: 6px;
-            height: 6px;
+        .dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: var(--accent);
             animation: blink 1s infinite;
         }
 
-        .status-dot.notify {
+        .dot.red {
             background: var(--accent2);
-            animation: blinkFast 0.25s infinite;
+            animation: blink .25s infinite;
         }
 
         @keyframes blink {
@@ -392,118 +322,98 @@
             }
 
             50% {
-                opacity: 0.2
+                opacity: .15
             }
         }
 
-        @keyframes blinkFast {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: 0
-            }
-        }
-
-        .music-bar {
+        /* volume */
+        .vol-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            justify-content: center;
         }
 
-        .music-icon-btn {
-            font-size: 16px;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.2s;
-            background: none;
-            border: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-
-        .music-icon-btn:hover {
-            transform: scale(1.2);
-        }
-
-        input[type="range"] {
+        input[type=range] {
             -webkit-appearance: none;
             appearance: none;
-            width: 110px;
-            height: 3px;
+            width: 120px;
+            height: 4px;
             background: var(--border);
             border-radius: 2px;
             outline: none;
             cursor: pointer;
         }
 
-        input[type="range"]::-webkit-slider-thumb {
+        input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 13px;
-            height: 13px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: var(--accent);
             cursor: pointer;
         }
 
-        .vol-label {
-            font-size: 10px;
-            color: var(--muted);
-            letter-spacing: 0.15em;
-            min-width: 32px;
+        .vbtn {
+            font-size: 18px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            touch-action: manipulation;
         }
 
-        .controls {
+        .vlbl {
+            font-size: 10px;
+            color: var(--muted);
+            min-width: 34px;
+        }
+
+        /* control buttons */
+        .btns {
             display: flex;
             gap: 12px;
         }
 
-        .ctrl-btn {
-            padding: 10px 22px;
+        .cbtn {
+            padding: 11px 26px;
             background: transparent;
             color: var(--muted);
             border: 1px solid var(--border);
-            border-radius: 2px;
-            font-family: 'DM Mono', monospace;
+            border-radius: 4px;
+            font-family: 'DM Mono';
             font-size: 11px;
-            letter-spacing: 0.2em;
+            letter-spacing: .18em;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.2s;
-            -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            transition: all .15s;
         }
 
-        .ctrl-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+        .cbtn:active {
+            opacity: .7;
         }
 
-        .ctrl-btn.danger:hover {
+        .cbtn.red:active {
             border-color: var(--accent2);
             color: var(--accent2);
         }
 
-        .flash {
+        /* flash overlay */
+        #flash {
             position: fixed;
             inset: 0;
             background: var(--accent2);
             opacity: 0;
             pointer-events: none;
-            z-index: 999;
+            z-index: 100;
         }
 
-        .flash.pop {
-            animation: flashPop 0.6s ease-out forwards;
+        #flash.pop {
+            animation: flashpop .5s ease-out forwards;
         }
 
-        @keyframes flashPop {
+        @keyframes flashpop {
             0% {
-                opacity: 0.22
+                opacity: .25
             }
 
             100% {
@@ -511,514 +421,478 @@
             }
         }
 
-        .notify-msg {
+        /* top banner */
+        #banner {
             position: fixed;
-            top: 28px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-90px);
+            top: 0;
+            left: 0;
+            right: 0;
             background: var(--accent2);
             color: #fff;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 20px;
-            letter-spacing: 0.15em;
-            padding: 12px 32px;
-            border-radius: 2px;
-            z-index: 1000;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            white-space: nowrap;
+            font-family: 'Bebas Neue';
+            font-size: 22px;
+            letter-spacing: .15em;
+            text-align: center;
+            padding: 14px;
+            transform: translateY(-100%);
+            transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
+            z-index: 101;
         }
 
-        .notify-msg.show {
-            transform: translateX(-50%) translateY(0);
+        #banner.show {
+            transform: translateY(0);
         }
 
-        .time-display.paused {
-            opacity: 0.45;
-        }
-
-        @media (max-width:430px) {
-            :root {
-                --ring-size: 230px;
+        @media(max-width:400px) {
+            .ring-wrap {
+                width: 220px;
+                height: 220px;
             }
 
-            .time-display {
-                font-size: 40px;
+            #timeDisplay {
+                font-size: 44px;
             }
 
-            .setup-panel {
-                width: 96vw;
-                padding: 20px 16px;
+            input[type=number] {
+                font-size: 36px;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="flash" id="flash"></div>
-    <div class="notify-msg" id="notifyMsg">⏰ TIME'S UP!</div>
-    <div class="container">
-        <div class="header">
+
+    <div id="flash"></div>
+    <div id="banner">⏰ LOOP 1 DONE!</div>
+
+    <!-- SETUP SCREEN -->
+    <div id="setup">
+        <div>
             <h1>LOOP TIMER</h1>
-            <p>Repeats until you close</p>
+            <p class="sub">repeats until you close</p>
         </div>
-        <div class="setup-panel" id="setupPanel">
-            <div class="input-group">
-                <label>Set Timer Duration</label>
-                <div class="input-row">
-                    <div class="time-input-wrap">
-                        <input type="number" id="hoursInput" value="0" min="0" max="99">
-                        <span>hrs</span>
-                    </div>
-                    <div class="colon">:</div>
-                    <div class="time-input-wrap">
-                        <input type="number" id="minutesInput" value="0" min="0" max="59">
-                        <span>min</span>
-                    </div>
-                    <div class="colon">:</div>
-                    <div class="time-input-wrap">
-                        <input type="number" id="secondsInput" value="0" min="0" max="59">
-                        <span>sec</span>
-                    </div>
+
+        <div class="card">
+            <span class="lbl">Set Duration</span>
+            <div class="time-row">
+                <div class="time-col">
+                    <input type="number" id="hh" value="0" min="0" max="99" inputmode="numeric">
+                    <span>hrs</span>
+                </div>
+                <div class="colon">:</div>
+                <div class="time-col">
+                    <input type="number" id="mm" value="0" min="0" max="59" inputmode="numeric">
+                    <span>min</span>
+                </div>
+                <div class="colon">:</div>
+                <div class="time-col">
+                    <input type="number" id="ss" value="0" min="0" max="59" inputmode="numeric">
+                    <span>sec</span>
                 </div>
             </div>
-            <div class="music-select-group">
-                <label>Alarm Music Style</label>
-                <div class="music-options">
-                    <button class="music-opt active" data-music="edm" onclick="selectMusic(this)"><span
-                            class="mi">⚡</span>EDM Pulse</button>
-                    <button class="music-opt" data-music="epic" onclick="selectMusic(this)"><span
-                            class="mi">🎺</span>Epic Fanfare</button>
-                    <button class="music-opt" data-music="siren" onclick="selectMusic(this)"><span
-                            class="mi">🚨</span>War Siren</button>
-                    <button class="music-opt" data-music="digital" onclick="selectMusic(this)"><span
-                            class="mi">🎮</span>Digital Boss</button>
-                </div>
-            </div>
-            <button class="start-btn" id="startBtn">START LOOP</button>
         </div>
-        <div class="timer-panel" id="timerPanel">
-            <div class="ring-wrap">
-                <div class="notify-ring" id="notifyRing"></div>
-                <svg class="ring-svg" viewBox="0 0 280 280">
-                    <circle class="ring-bg" cx="140" cy="140" r="128" />
-                    <circle class="ring-progress" id="ringProgress" cx="140" cy="140" r="128" />
-                </svg>
-                <div class="ring-center">
-                    <div class="time-display" id="timeDisplay">00:00:00</div>
-                    <div class="time-label">remaining</div>
-                    <div class="music-badge" id="musicBadge">⚡ EDM Pulse</div>
-                </div>
+
+        <div class="card">
+            <span class="lbl">Alarm Sound</span>
+            <div class="music-grid">
+                <button class="mopt on" data-m="edm"><span class="ico">⚡</span>EDM Pulse</button>
+                <button class="mopt" data-m="epic"><span class="ico">🎺</span>Epic Fanfare</button>
+                <button class="mopt" data-m="siren"><span class="ico">🚨</span>War Siren</button>
+                <button class="mopt" data-m="digital"><span class="ico">🎮</span>Digital Boss</button>
             </div>
-            <div class="loop-count">Loop <span id="loopNum">1</span> &mdash; interval: <span id="intervalLabel">—</span>
+        </div>
+
+        <button id="startBtn">▶ START LOOP</button>
+    </div>
+
+    <!-- TIMER SCREEN -->
+    <div id="timer">
+        <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 260 260">
+                <circle class="ring-bg" cx="130" cy="130" r="118" />
+                <circle class="ring-fg" id="ringFg" cx="130" cy="130" r="118" />
+            </svg>
+            <div class="ring-inner">
+                <div id="timeDisplay">00:00:00</div>
+                <div class="rlbl">remaining</div>
+                <div id="mbadge">⚡ EDM PULSE</div>
             </div>
-            <div class="status-bar">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">running</span>
-            </div>
-            <div class="music-bar">
-                <button class="music-icon-btn" id="muteBtn" onclick="toggleMute()">🔔</button>
-                <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)">
-                <span class="vol-label" id="volLabel">80%</span>
-            </div>
-            <div class="controls">
-                <button class="ctrl-btn" id="pauseBtn" onclick="togglePause()">Pause</button>
-                <button class="ctrl-btn danger" onclick="resetTimer()">Reset</button>
-            </div>
+        </div>
+
+        <div id="loopLine">Loop <b id="loopNum">1</b> — <b id="intLbl">—</b></div>
+
+        <div class="sbar">
+            <div class="dot" id="dot"></div>
+            <span id="statusTxt">running</span>
+        </div>
+
+        <div class="vol-row">
+            <button class="vbtn" id="muteBtn">🔔</button>
+            <input type="range" id="volSlider" min="0" max="100" value="80">
+            <span class="vlbl" id="volLbl">80%</span>
+        </div>
+
+        <div class="btns">
+            <button class="cbtn" id="pauseBtn">Pause</button>
+            <button class="cbtn red" id="resetBtn">Reset</button>
         </div>
     </div>
+
     <script>
-        var totalSeconds = 0, remaining = 0, loopCount = 1;
-        var timerId = null, notifying = false, paused = false, selectedMusic = 'edm';
-        var circumference = 2 * Math.PI * 128;
-        var ringEl = document.getElementById('ringProgress');
-        ringEl.style.strokeDasharray = circumference;
-        ringEl.style.strokeDashoffset = 0;
-        var musicLabels = { edm: '⚡ EDM Pulse', epic: '🎺 Epic Fanfare', siren: '🚨 War Siren', digital: '🎮 Digital Boss' };
+        // ─────────────────────────────────────────────
+        // STATE
+        // ─────────────────────────────────────────────
+        var total = 0, left = 0, loop = 1;
+        var paused = false, alarming = false;
+        var tid = null;          // setInterval id
+        var endTime = 0;         // absolute ms when current interval ends
+        var music = 'edm';
 
-        function selectMusic(btn) {
-            document.querySelectorAll('.music-opt').forEach(function (b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            selectedMusic = btn.dataset.music;
-        }
+        var C = 2 * Math.PI * 118;
+        var fg = document.getElementById('ringFg');
+        fg.style.strokeDasharray = C;
+        fg.style.strokeDashoffset = 0;
 
-        // Audio
-        var audioCtx = null, masterGain = null, alarmNodes = [];
-        var volumeLevel = 0.8, muted = false;
+        var mnames = { edm: '⚡ EDM PULSE', epic: '🎺 EPIC FANFARE', siren: '🚨 WAR SIREN', digital: '🎮 DIGITAL BOSS' };
 
-        function unlockAudio() {
-            if (audioCtx) {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+        // ─────────────────────────────────────────────
+        // MUSIC SELECT
+        // ─────────────────────────────────────────────
+        document.querySelectorAll('.mopt').forEach(function (b) {
+            b.addEventListener('click', function () {
+                document.querySelectorAll('.mopt').forEach(function (x) { x.classList.remove('on'); });
+                b.classList.add('on');
+                music = b.getAttribute('data-m');
+            });
+        });
+
+        // ─────────────────────────────────────────────
+        // AUDIO — created ONLY inside user tap
+        // ─────────────────────────────────────────────
+        var AC = null, MG = null, nodes = [];
+        var vol = 0.8, muted = false;
+
+        function initAC() {
+            // Already created
+            if (AC) {
+                if (AC.state === 'suspended') AC.resume();
                 return;
             }
             try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                masterGain = audioCtx.createGain();
-                masterGain.gain.value = muted ? 0 : volumeLevel;
-                masterGain.connect(audioCtx.destination);
-                // iOS unlock: play silent buffer in same synchronous call stack as user gesture
-                var buf = audioCtx.createBuffer(1, 1, 22050);
-                var src = audioCtx.createBufferSource();
-                src.buffer = buf;
-                src.connect(audioCtx.destination);
-                src.start(0);
-            } catch (e) { console.warn('Audio init:', e); }
+                AC = new (window.AudioContext || window.webkitAudioContext)();
+                MG = AC.createGain();
+                MG.gain.value = vol;
+                MG.connect(AC.destination);
+                // *** iOS/Android unlock: silent buffer played synchronously in tap ***
+                var b = AC.createBuffer(1, 1, 22050);
+                var s = AC.createBufferSource();
+                s.buffer = b;
+                s.connect(AC.destination);
+                s.start(0);
+            } catch (e) { console.warn(e); }
         }
 
-        function updateVolume(val) {
-            volumeLevel = val / 100;
-            document.getElementById('volLabel').textContent = val + '%';
-            if (masterGain && !muted) masterGain.gain.value = volumeLevel;
+        function setVol(v) {
+            vol = v / 100;
+            document.getElementById('volLbl').textContent = v + '%';
+            if (MG && !muted) MG.gain.value = vol;
         }
-        function toggleMute() {
+        document.getElementById('volSlider').addEventListener('input', function () {
+            setVol(this.value);
+        });
+        document.getElementById('muteBtn').addEventListener('click', function () {
             muted = !muted;
-            document.getElementById('muteBtn').textContent = muted ? '🔕' : '🔔';
-            if (masterGain) masterGain.gain.value = muted ? 0 : volumeLevel;
+            this.textContent = muted ? '🔕' : '🔔';
+            if (MG) MG.gain.value = muted ? 0 : vol;
+        });
+
+        function killNodes() {
+            nodes.forEach(function (n) { try { n.stop(); } catch (e) { } });
+            nodes = [];
         }
-        function stopAlarm() {
-            alarmNodes.forEach(function (n) { try { n.stop(); } catch (e) { } });
-            alarmNodes = [];
-        }
-        function mkOsc(type, freq) {
-            var o = audioCtx.createOscillator();
-            o.type = type; o.frequency.value = freq; alarmNodes.push(o); return o;
-        }
-        function mkGain(val) {
-            var g = audioCtx.createGain(); g.gain.value = val; return g;
-        }
-        function mkNoise(dur) {
-            var buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
-            var d = buf.getChannelData(0);
-            for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-            var s = audioCtx.createBufferSource(); s.buffer = buf; alarmNodes.push(s); return s;
+        function osc(t, f) { var o = AC.createOscillator(); o.type = t; o.frequency.value = f; nodes.push(o); return o; }
+        function gain(v) { var g = AC.createGain(); g.gain.value = v; return g; }
+        function noise(d) {
+            var b = AC.createBuffer(1, AC.sampleRate * d, AC.sampleRate);
+            var arr = b.getChannelData(0);
+            for (var i = 0; i < arr.length; i++) arr[i] = Math.random() * 2 - 1;
+            var s = AC.createBufferSource(); s.buffer = b; nodes.push(s); return s;
         }
 
-        function playEdm(now) {
-            var dur = 4.0;
-            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(function (t) {
-                var o = mkOsc('sine', 180), g = mkGain(0);
-                o.connect(g); g.connect(masterGain);
-                o.frequency.exponentialRampToValueAtTime(35, now + t + 0.2);
-                g.gain.setValueAtTime(1.1, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.25);
-                o.start(now + t); o.stop(now + t + 0.28);
+        function playEdm(n) {
+            var dur = 4;
+            [0, .5, 1, 1.5, 2, 2.5, 3, 3.5].forEach(function (t) {
+                var o = osc('sine', 180), g = gain(0); o.connect(g); g.connect(MG);
+                o.frequency.exponentialRampToValueAtTime(35, n + t + .2);
+                g.gain.setValueAtTime(1.1, n + t); g.gain.exponentialRampToValueAtTime(.001, n + t + .25);
+                o.start(n + t); o.stop(n + t + .3);
             });
-            var sir = mkOsc('sawtooth', 660), sg = mkGain(0);
-            sir.connect(sg); sg.connect(masterGain);
-            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(function (t, i) { sir.frequency.setValueAtTime(i % 2 === 0 ? 660 : 990, now + t); });
-            sg.gain.setValueAtTime(0, now); sg.gain.linearRampToValueAtTime(0.3, now + 0.05);
-            sg.gain.setValueAtTime(0.3, now + 3.6); sg.gain.linearRampToValueAtTime(0, now + dur);
-            sir.start(now); sir.stop(now + dur);
-            [[0, 523, 659, 784], [0.25, 587, 740, 880], [0.75, 523, 659, 784], [1.25, 587, 740, 880],
+            var sir = osc('sawtooth', 660), sg = gain(0); sir.connect(sg); sg.connect(MG);
+            [0, .5, 1, 1.5, 2, 2.5, 3, 3.5].forEach(function (t, i) { sir.frequency.setValueAtTime(i % 2 ? 990 : 660, n + t); });
+            sg.gain.setValueAtTime(0, n); sg.gain.linearRampToValueAtTime(.3, n + .05);
+            sg.gain.setValueAtTime(.3, n + 3.6); sg.gain.linearRampToValueAtTime(0, n + dur);
+            sir.start(n); sir.stop(n + dur);
+            [[0, 523, 659, 784], [.25, 587, 740, 880], [.75, 523, 659, 784], [1.25, 587, 740, 880],
             [1.75, 523, 659, 784], [2.25, 659, 830, 988], [2.75, 523, 659, 784], [3.25, 698, 880, 1047]].forEach(function (row) {
                 var t = row[0];
                 for (var i = 1; i < row.length; i++) {
-                    var f = row[i], o = mkOsc('square', f), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
-                    flt.type = 'bandpass'; flt.frequency.value = f; flt.Q.value = 2;
-                    o.connect(flt); flt.connect(g); g.connect(masterGain);
-                    g.gain.setValueAtTime(0.16, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.22);
-                    o.start(now + t); o.stop(now + t + 0.25);
+                    var o = osc('square', row[i]), flt = AC.createBiquadFilter(), g = gain(0);
+                    flt.type = 'bandpass'; flt.frequency.value = row[i]; flt.Q.value = 2;
+                    o.connect(flt); flt.connect(g); g.connect(MG);
+                    g.gain.setValueAtTime(.16, n + t); g.gain.exponentialRampToValueAtTime(.001, n + t + .22);
+                    o.start(n + t); o.stop(n + t + .25);
                 }
             });
-            [0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.25].forEach(function (t) {
-                var n = mkNoise(0.14), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
-                flt.type = 'highpass'; flt.frequency.value = 1800;
-                n.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.55, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
-                n.start(now + t); n.stop(now + t + 0.16);
+            [.25, .75, 1.25, 1.75, 2.25, 2.75, 3.25].forEach(function (t) {
+                var no = noise(.14), flt = AC.createBiquadFilter(), g = gain(0);
+                flt.type = 'highpass'; flt.frequency.value = 1800; no.connect(flt); flt.connect(g); g.connect(MG);
+                g.gain.setValueAtTime(.55, n + t); g.gain.exponentialRampToValueAtTime(.001, n + t + .12);
+                no.start(n + t); no.stop(n + t + .16);
             });
-            var big = mkOsc('sine', 440), bg = mkGain(0);
-            big.connect(bg); bg.connect(masterGain);
-            big.frequency.setValueAtTime(440, now + 3.4); big.frequency.linearRampToValueAtTime(1320, now + dur);
-            bg.gain.linearRampToValueAtTime(0.7, now + 3.6); bg.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            big.start(now + 3.4); big.stop(now + dur + 0.05);
         }
-
-        function playEpic(now) {
+        function playEpic(n) {
             var dur = 4.5;
-            [0, 0.65, 1.3, 2.0, 2.65, 3.3, 3.9].forEach(function (t) {
-                var o = mkOsc('sine', 120), g = mkGain(0);
-                o.connect(g); g.connect(masterGain);
-                o.frequency.setValueAtTime(120, now + t); o.frequency.exponentialRampToValueAtTime(28, now + t + 0.45);
-                g.gain.setValueAtTime(1.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.55);
-                o.start(now + t); o.stop(now + t + 0.6);
-                var ns = mkNoise(0.08), flt = audioCtx.createBiquadFilter(), dg = mkGain(0);
-                flt.type = 'lowpass'; flt.frequency.value = 350;
-                ns.connect(flt); flt.connect(dg); dg.connect(masterGain);
-                dg.gain.setValueAtTime(0.9, now + t); dg.gain.exponentialRampToValueAtTime(0.001, now + t + 0.07);
-                ns.start(now + t); ns.stop(now + t + 0.1);
+            [0, .65, 1.3, 2, 2.65, 3.3, 3.9].forEach(function (t) {
+                var o = osc('sine', 120), g = gain(0); o.connect(g); g.connect(MG);
+                o.frequency.exponentialRampToValueAtTime(28, n + t + .45);
+                g.gain.setValueAtTime(1.5, n + t); g.gain.exponentialRampToValueAtTime(.001, n + t + .55);
+                o.start(n + t); o.stop(n + t + .6);
             });
-            [[0, [165, 208, 247]], [0.65, [175, 220, 262]], [1.3, [196, 247, 294]], [2.0, [220, 277, 330]],
+            [[0, [165, 208, 247]], [.65, [175, 220, 262]], [1.3, [196, 247, 294]], [2, [220, 277, 330]],
             [2.65, [175, 220, 262]], [3.3, [220, 277, 330]], [3.9, [262, 330, 392]]].forEach(function (row) {
-                var t = row[0], freqs = row[1];
-                freqs.forEach(function (f) {
-                    var o = mkOsc('sawtooth', f), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                row[1].forEach(function (f) {
+                    var o = osc('sawtooth', f), flt = AC.createBiquadFilter(), g = gain(0);
                     flt.type = 'lowpass'; flt.frequency.value = 900; flt.Q.value = 3;
-                    o.connect(flt); flt.connect(g); g.connect(masterGain);
-                    g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.32, now + t + 0.04);
-                    g.gain.setValueAtTime(0.3, now + t + 0.3); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.6);
-                    o.start(now + t); o.stop(now + t + 0.65);
+                    o.connect(flt); flt.connect(g); g.connect(MG);
+                    g.gain.setValueAtTime(0, n + row[0]); g.gain.linearRampToValueAtTime(.32, n + row[0] + .04);
+                    g.gain.setValueAtTime(.3, n + row[0] + .3); g.gain.exponentialRampToValueAtTime(.001, n + row[0] + .6);
+                    o.start(n + row[0]); o.stop(n + row[0] + .65);
                 });
             });
             [0, 1.3, 2.65, 3.9].forEach(function (t) {
-                var n = mkNoise(0.7), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
-                flt.type = 'highpass'; flt.frequency.value = 5000;
-                n.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.5, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.7);
-                n.start(now + t); n.stop(now + t + 0.75);
+                var no = noise(.7), flt = AC.createBiquadFilter(), g = gain(0);
+                flt.type = 'highpass'; flt.frequency.value = 5000; no.connect(flt); flt.connect(g); g.connect(MG);
+                g.gain.setValueAtTime(.5, n + t); g.gain.exponentialRampToValueAtTime(.001, n + t + .7);
+                no.start(n + t); no.stop(n + t + .75);
             });
-            var sw = mkOsc('triangle', 196), sg2 = mkGain(0);
-            sw.connect(sg2); sg2.connect(masterGain);
-            sw.frequency.linearRampToValueAtTime(523, now + dur);
-            sg2.gain.linearRampToValueAtTime(0.22, now + 0.5);
-            sg2.gain.setValueAtTime(0.22, now + dur - 0.4); sg2.gain.linearRampToValueAtTime(0, now + dur);
-            sw.start(now); sw.stop(now + dur);
-            var bm = mkOsc('sine', 50), bg2 = mkGain(0);
-            bm.connect(bg2); bg2.connect(masterGain);
-            bg2.gain.setValueAtTime(2.0, now + dur - 0.05); bg2.gain.exponentialRampToValueAtTime(0.001, now + dur + 0.5);
-            bm.start(now + dur - 0.05); bm.stop(now + dur + 0.55);
         }
-
-        function playSiren(now) {
-            var dur = 4.0;
+        function playSiren(n) {
+            var dur = 4;
             for (var i = 0; i < 8; i++) {
-                var t = i * 0.5, o = mkOsc('sawtooth', 440 + (i % 2) * 220);
-                var flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                var t = i * .5, o = osc('sawtooth', 440 + (i % 2) * 220), flt = AC.createBiquadFilter(), g = gain(0);
                 flt.type = 'peaking'; flt.frequency.value = 800; flt.gain.value = 18;
-                o.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0, now + t); g.gain.linearRampToValueAtTime(0.42, now + t + 0.02);
-                g.gain.setValueAtTime(0.42, now + t + 0.22); g.gain.linearRampToValueAtTime(0, now + t + 0.48);
-                o.start(now + t); o.stop(now + t + 0.5);
+                o.connect(flt); flt.connect(g); g.connect(MG);
+                g.gain.setValueAtTime(0, n + t); g.gain.linearRampToValueAtTime(.42, n + t + .02);
+                g.gain.setValueAtTime(.42, n + t + .22); g.gain.linearRampToValueAtTime(0, n + t + .48);
+                o.start(n + t); o.stop(n + t + .5);
             }
-            [0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].forEach(function (t, i) {
-                var o = mkOsc('sine', i % 2 === 0 ? 52 : 69), g = mkGain(0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(1.4, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.42);
-                o.start(now + t); o.stop(now + t + 0.45);
+            [0, .5, 1, 1.5, 2, 2.5, 3, 3.5].forEach(function (t, i) {
+                var o = osc('sine', i % 2 ? 69 : 52), g = gain(0); o.connect(g); g.connect(MG);
+                g.gain.setValueAtTime(1.4, n + t); g.gain.exponentialRampToValueAtTime(.001, n + t + .42);
+                o.start(n + t); o.stop(n + t + .45);
             });
-            for (var j = 0; j < 16; j++) {
-                var tt = j * 0.25, n = mkNoise(0.06), flt2 = audioCtx.createBiquadFilter(), g2 = mkGain(0);
-                flt2.type = 'highpass'; flt2.frequency.value = 8000;
-                n.connect(flt2); flt2.connect(g2); g2.connect(masterGain);
-                g2.gain.setValueAtTime(j % 4 === 0 ? 0.65 : 0.28, now + tt);
-                g2.gain.exponentialRampToValueAtTime(0.001, now + tt + 0.05);
-                n.start(now + tt); n.stop(now + tt + 0.07);
-            }
-            var mod = mkOsc('sine', 9), carrier = mkOsc('square', 330);
-            var mG = mkGain(160), cg = mkGain(0);
-            mod.connect(mG); mG.connect(carrier.frequency);
-            carrier.connect(cg); cg.connect(masterGain);
-            cg.gain.setValueAtTime(0, now); cg.gain.linearRampToValueAtTime(0.3, now + 0.1);
-            cg.gain.setValueAtTime(0.3, now + 3.6); cg.gain.linearRampToValueAtTime(0, now + dur);
-            mod.start(now); mod.stop(now + dur);
-            carrier.start(now); carrier.stop(now + dur);
-            var scr = mkOsc('sawtooth', 220), scrg = mkGain(0);
-            scr.connect(scrg); scrg.connect(masterGain);
-            scr.frequency.linearRampToValueAtTime(1760, now + dur);
-            scrg.gain.setValueAtTime(0.5, now + 3.5); scrg.gain.exponentialRampToValueAtTime(0.001, now + dur);
-            scr.start(now + 3.5); scr.stop(now + dur + 0.05);
+            var mod = osc('sine', 9), car = osc('square', 330), mg = gain(160), cg = gain(0);
+            mod.connect(mg); mg.connect(car.frequency); car.connect(cg); cg.connect(MG);
+            cg.gain.linearRampToValueAtTime(.3, n + .1); cg.gain.setValueAtTime(.3, n + 3.6); cg.gain.linearRampToValueAtTime(0, n + dur);
+            mod.start(n); mod.stop(n + dur); car.start(n); car.stop(n + dur);
         }
-
-        function playDigital(now) {
+        function playDigital(n) {
             var dur = 4.5;
             [262, 330, 392, 494, 523, 659, 784, 988, 1047, 988, 784, 659, 523, 494, 392, 330].forEach(function (f, i) {
-                var t = i * 0.11, o = mkOsc('square', f), g = mkGain(0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.22, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.09);
-                o.start(now + t); o.stop(now + t + 0.11);
+                var t = i * .11, o = osc('square', f), g = gain(0); o.connect(g); g.connect(MG);
+                g.gain.setValueAtTime(.22, n + t); g.gain.exponentialRampToValueAtTime(.001, n + t + .09);
+                o.start(n + t); o.stop(n + t + .11);
             });
             [[1.8, [147, 185, 220]], [2.15, [165, 208, 247]], [2.5, [185, 233, 277]], [2.85, [220, 277, 330]],
             [3.2, [196, 247, 294]], [3.55, [220, 277, 330]]].forEach(function (row) {
-                var t = row[0], freqs = row[1];
-                freqs.forEach(function (f) {
-                    var o = mkOsc('square', f), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
+                row[1].forEach(function (f) {
+                    var o = osc('square', f), flt = AC.createBiquadFilter(), g = gain(0);
                     flt.type = 'lowpass'; flt.frequency.value = 2200;
-                    o.connect(flt); flt.connect(g); g.connect(masterGain);
-                    g.gain.setValueAtTime(0.38, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.32);
-                    o.start(now + t); o.stop(now + t + 0.35);
+                    o.connect(flt); flt.connect(g); g.connect(MG);
+                    g.gain.setValueAtTime(.38, n + row[0]); g.gain.exponentialRampToValueAtTime(.001, n + row[0] + .32);
+                    o.start(n + row[0]); o.stop(n + row[0] + .35);
                 });
             });
-            [0, 0.44, 0.88, 1.32, 1.76, 1.8, 2.15, 2.5, 2.85, 3.2, 3.55, 3.9].forEach(function (t) {
-                var o = mkOsc('sine', 155), g = mkGain(0);
-                o.connect(g); g.connect(masterGain);
-                o.frequency.exponentialRampToValueAtTime(28, now + t + 0.16);
-                g.gain.setValueAtTime(0.95, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.2);
-                o.start(now + t); o.stop(now + t + 0.22);
-            });
-            for (var i = 0; i < 20; i++) {
-                var t2 = i * 0.22, n = mkNoise(0.04), flt = audioCtx.createBiquadFilter(), g = mkGain(0);
-                flt.type = 'bandpass'; flt.frequency.value = 4200; flt.Q.value = 0.7;
-                n.connect(flt); flt.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.28, now + t2); g.gain.exponentialRampToValueAtTime(0.001, now + t2 + 0.04);
-                n.start(now + t2); n.stop(now + t2 + 0.05);
-            }
-            [1047, 988, 880, 784, 698, 659, 587, 523, 494, 440, 392, 330, 294, 262, 220, 196].forEach(function (f, i) {
-                var t = 1.8 + i * 0.14, o = mkOsc('square', f), g = mkGain(0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0.2, now + t); g.gain.exponentialRampToValueAtTime(0.001, now + t + 0.12);
-                o.start(now + t); o.stop(now + t + 0.14);
-            });
             [131, 165, 196, 262].forEach(function (f) {
-                var o = mkOsc('square', f), g = mkGain(0);
-                o.connect(g); g.connect(masterGain);
-                g.gain.setValueAtTime(0, now + 4.1); g.gain.linearRampToValueAtTime(0.45, now + 4.16);
-                g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                o.start(now + 4.1); o.stop(now + dur + 0.05);
+                var o = osc('square', f), g = gain(0); o.connect(g); g.connect(MG);
+                g.gain.setValueAtTime(0, n + 4.1); g.gain.linearRampToValueAtTime(.45, n + 4.16);
+                g.gain.exponentialRampToValueAtTime(.001, n + dur);
+                o.start(n + 4.1); o.stop(n + dur + .05);
             });
         }
 
-        function playAlarm() {
-            if (!audioCtx || !masterGain) return;
-            stopAlarm();
+        function doAlarm() {
+            if (!AC || !MG) return;
+            killNodes();
             try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                var now = audioCtx.currentTime + 0.05;
-                if (selectedMusic === 'edm') playEdm(now);
-                else if (selectedMusic === 'epic') playEpic(now);
-                else if (selectedMusic === 'siren') playSiren(now);
-                else if (selectedMusic === 'digital') playDigital(now);
-            } catch (e) { console.warn('playAlarm:', e); }
+                if (AC.state === 'suspended') AC.resume();
+                var n = AC.currentTime + .05;
+                if (music === 'edm') playEdm(n);
+                else if (music === 'epic') playEpic(n);
+                else if (music === 'siren') playSiren(n);
+                else playDigital(n);
+            } catch (e) { console.warn(e); }
         }
 
-        // Timer
+        // ─────────────────────────────────────────────
+        // TIMER LOGIC
+        // ─────────────────────────────────────────────
         function startTimer() {
-            // MUST call unlockAudio synchronously here — inside the tap handler
-            unlockAudio();
+            // *** Audio unlock MUST happen here, synchronously, in the click handler ***
+            initAC();
 
-            var hrs = Math.max(0, parseInt(document.getElementById('hoursInput').value) || 0);
-            var mins = Math.max(0, parseInt(document.getElementById('minutesInput').value) || 0);
-            var secs = Math.max(0, parseInt(document.getElementById('secondsInput').value) || 0);
-            totalSeconds = hrs * 3600 + mins * 60 + secs;
+            var h = parseInt(document.getElementById('hh').value) || 0;
+            var m = parseInt(document.getElementById('mm').value) || 0;
+            var s = parseInt(document.getElementById('ss').value) || 0;
+            total = h * 3600 + m * 60 + s;
+            if (total <= 0) { alert('Please enter a time!'); return; }
 
-            if (totalSeconds <= 0) { alert('Please set a time greater than 0!'); return; }
-
-            loopCount = 1;
-            remaining = totalSeconds;
-            paused = false;
-            notifying = false;
+            loop = 1; left = total; paused = false; alarming = false;
 
             var lbl = '';
-            if (hrs) lbl += hrs + 'h ';
-            if (mins) lbl += mins + 'm ';
-            lbl += secs + 's';
-            document.getElementById('intervalLabel').textContent = lbl.trim();
-            document.getElementById('musicBadge').textContent = musicLabels[selectedMusic];
-            document.getElementById('setupPanel').classList.add('hidden');
-            document.getElementById('timerPanel').classList.add('visible');
-            updateDisplay();
-            startTicking();
+            if (h) lbl += h + 'h ';
+            if (m) lbl += m + 'm ';
+            lbl += s + 's';
+            document.getElementById('intLbl').innerHTML = '<b>' + lbl.trim() + '</b>';
+            document.getElementById('mbadge').textContent = mnames[music];
+
+            document.getElementById('setup').classList.add('gone');
+            document.getElementById('timer').classList.add('show');
+
+            renderDisplay();
+            beginCountdown();
         }
 
-        function startTicking() {
-            clearInterval(timerId);
-            timerId = setInterval(tick, 1000);
+        function beginCountdown() {
+            clearInterval(tid);
+            // Record the absolute end time — this is immune to setInterval drift
+            endTime = Date.now() + left * 1000;
+            tid = setInterval(tick, 500); // poll every 500ms for responsiveness
         }
 
         function tick() {
-            if (paused || notifying) return;
-            remaining--;
-            if (remaining <= 0) {
-                remaining = 0;
-                updateDisplay();
-                clearInterval(timerId);
-                timerId = null;
-                triggerNotification();
+            if (paused || alarming) return;
+
+            var now = Date.now();
+            left = Math.round((endTime - now) / 1000);
+
+            if (left <= 0) {
+                left = 0;
+                renderDisplay();
+                clearInterval(tid); tid = null;
+                fireAlarm();
                 return;
             }
-            updateDisplay();
+            renderDisplay();
         }
 
-        function updateDisplay() {
-            var r = Math.max(0, remaining);
+        function renderDisplay() {
+            var r = Math.max(0, left);
             var h = Math.floor(r / 3600);
             var m = Math.floor((r % 3600) / 60);
             var s = r % 60;
             document.getElementById('timeDisplay').textContent =
-                String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-            var progress = totalSeconds > 0 ? r / totalSeconds : 0;
-            ringEl.style.strokeDashoffset = circumference * (1 - progress);
-            if (progress < 0.2) {
-                ringEl.style.stroke = 'var(--accent2)';
+                pad(h) + ':' + pad(m) + ':' + pad(s);
+
+            var pct = total > 0 ? r / total : 0;
+            fg.style.strokeDashoffset = C * (1 - pct);
+
+            if (pct < .2) {
+                fg.style.stroke = 'var(--accent2)';
                 document.getElementById('timeDisplay').style.color = 'var(--accent2)';
-            } else if (progress < 0.5) {
-                ringEl.style.stroke = 'var(--accent3)';
+            } else if (pct < .5) {
+                fg.style.stroke = 'var(--accent3)';
                 document.getElementById('timeDisplay').style.color = 'var(--text)';
             } else {
-                ringEl.style.stroke = 'var(--accent)';
+                fg.style.stroke = 'var(--accent)';
                 document.getElementById('timeDisplay').style.color = 'var(--text)';
             }
-            document.getElementById('loopNum').textContent = loopCount;
+            document.getElementById('loopNum').textContent = loop;
         }
 
-        function triggerNotification() {
-            notifying = true;
-            var flash = document.getElementById('flash');
-            flash.classList.remove('pop'); void flash.offsetWidth; flash.classList.add('pop');
-            document.body.classList.add('notifying');
-            setTimeout(function () { document.body.classList.remove('notifying'); }, 2000);
-            var ring = document.getElementById('notifyRing');
-            ring.classList.remove('pulse'); void ring.offsetWidth; ring.classList.add('pulse');
-            var dot = document.getElementById('statusDot');
-            dot.classList.add('notify');
-            document.getElementById('statusText').textContent = 'notifying!';
-            var msg = document.getElementById('notifyMsg');
-            msg.textContent = '⏰ LOOP ' + loopCount + ' DONE!';
-            msg.classList.add('show');
-            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                new Notification('⏰ Loop Timer', { body: 'Loop ' + loopCount + ' complete! Restarting…' });
-            }
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            playAlarm();
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function fireAlarm() {
+            alarming = true;
+
+            // Flash
+            var fl = document.getElementById('flash');
+            fl.classList.remove('pop'); void fl.offsetWidth; fl.classList.add('pop');
+
+            // Banner
+            var bn = document.getElementById('banner');
+            bn.textContent = '⏰ LOOP ' + loop + ' DONE!';
+            bn.classList.add('show');
+
+            // Status dot
+            var dot = document.getElementById('dot');
+            dot.classList.add('red');
+            document.getElementById('statusTxt').textContent = 'notifying!';
+
+            // Sound
+            doAlarm();
+
+            // After 4 seconds → restart
             setTimeout(function () {
-                stopAlarm();
-                msg.classList.remove('show');
-                dot.classList.remove('notify');
-                document.getElementById('statusText').textContent = 'running';
-                loopCount++;
-                remaining = totalSeconds;
-                notifying = false;
-                updateDisplay();
-                startTicking();
+                killNodes();
+                bn.classList.remove('show');
+                dot.classList.remove('red');
+                document.getElementById('statusTxt').textContent = 'running';
+                loop++;
+                left = total;
+                alarming = false;
+                renderDisplay();
+                beginCountdown();
             }, 4000);
         }
 
-        function togglePause() {
+        // ─────────────────────────────────────────────
+        // CONTROLS
+        // ─────────────────────────────────────────────
+        document.getElementById('pauseBtn').addEventListener('click', function () {
+            if (alarming) return;
             paused = !paused;
-            document.getElementById('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
-            document.getElementById('statusText').textContent = paused ? 'paused' : 'running';
-            document.getElementById('timeDisplay').classList.toggle('paused', paused);
-            document.getElementById('statusDot').style.animationPlayState = paused ? 'paused' : 'running';
-        }
+            if (paused) {
+                // Save how much is left
+                left = Math.round((endTime - Date.now()) / 1000);
+                this.textContent = 'Resume';
+                document.getElementById('statusTxt').textContent = 'paused';
+                document.getElementById('dot').style.animationPlayState = 'paused';
+                document.getElementById('timeDisplay').style.opacity = '.45';
+            } else {
+                // Reset end time based on remaining
+                endTime = Date.now() + left * 1000;
+                this.textContent = 'Pause';
+                document.getElementById('statusTxt').textContent = 'running';
+                document.getElementById('dot').style.animationPlayState = 'running';
+                document.getElementById('timeDisplay').style.opacity = '1';
+            }
+        });
 
-        function resetTimer() {
-            clearInterval(timerId); timerId = null;
-            stopAlarm();
-            notifying = false; paused = false; loopCount = 1; remaining = 0;
-            document.getElementById('timerPanel').classList.remove('visible');
-            document.getElementById('setupPanel').classList.remove('hidden');
-            document.getElementById('notifyMsg').classList.remove('show');
-            document.getElementById('statusText').textContent = 'running';
-            document.getElementById('statusDot').classList.remove('notify');
-            document.getElementById('statusDot').style.animationPlayState = 'running';
-            document.getElementById('timeDisplay').classList.remove('paused');
+        document.getElementById('resetBtn').addEventListener('click', function () {
+            clearInterval(tid); tid = null;
+            killNodes();
+            alarming = false; paused = false; loop = 1; left = 0;
+            document.getElementById('timer').classList.remove('show');
+            document.getElementById('setup').classList.remove('gone');
+            document.getElementById('banner').classList.remove('show');
+            document.getElementById('dot').classList.remove('red');
+            document.getElementById('dot').style.animationPlayState = 'running';
+            document.getElementById('statusTxt').textContent = 'running';
+            document.getElementById('timeDisplay').style.opacity = '1';
             document.getElementById('timeDisplay').style.color = 'var(--text)';
-            ringEl.style.strokeDashoffset = 0;
-            ringEl.style.stroke = 'var(--accent)';
-        }
+            document.getElementById('pauseBtn').textContent = 'Pause';
+            fg.style.strokeDashoffset = 0;
+            fg.style.stroke = 'var(--accent)';
+        });
 
-        // Use addEventListener for most reliable mobile tap detection
+        // Start button
         document.getElementById('startBtn').addEventListener('click', startTimer);
 
-        ['secondsInput', 'minutesInput'].forEach(function (id) {
-            document.getElementById(id).addEventListener('change', function () {
-                this.value = Math.max(0, Math.min(59, parseInt(this.value) || 0));
-            });
-        });
-        document.getElementById('hoursInput').addEventListener('change', function () {
-            this.value = Math.max(0, Math.min(99, parseInt(this.value) || 0));
-        });
-
-        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
+        // Clamp inputs
+        document.getElementById('hh').addEventListener('blur', function () { this.value = Math.min(99, Math.max(0, parseInt(this.value) || 0)); });
+        document.getElementById('mm').addEventListener('blur', function () { this.value = Math.min(59, Math.max(0, parseInt(this.value) || 0)); });
+        document.getElementById('ss').addEventListener('blur', function () { this.value = Math.min(59, Math.max(0, parseInt(this.value) || 0)); });
     </script>
 </body>
 
